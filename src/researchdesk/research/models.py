@@ -23,7 +23,10 @@ class SourceReference(Contract):
     source_path: str | None = Field(
         default=None,
         max_length=1000,
-        description="Optional RFC 6901 pointer to one string within the artifact content.",
+        description=(
+            "Optional RFC 6901 pointer to a scalar in the artifact content. For text, cite "
+            "a passage; for numbers, booleans or null, cite the entire canonical JSON value."
+        ),
     )
 
 

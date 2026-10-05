@@ -1,0 +1,23 @@
+{
+  "image": "quantconnect/lean",
+  "index_digest": "sha256:442c0f886cbc55403d779fa3cbd6070c192a7b8e1f2a5dcf9b570b735dc543e4",
+  "arm64_digest": "sha256:e03a90c24efc7849426fb8a00d1c643a9196c1507ae5ee52fa004f85bfb9e4c7",
+  "platform": {
+    "architecture": "arm64",
+    "os": "linux"
+  },
+  "compressed_layer_bytes": 5070465520,
+  "created": "2026-10-05T13:57:12.283602517Z",
+  "labels": {
+    "lean_version": "18156",
+    "python_version": "3.11",
+    "strict_python_version": "3.11.11",
+    "target_framework": "net10.0"
+  },
+  "entrypoint": [
+    "dotnet",
+    "QuantConnect.Lean.Launcher.dll"
+  ],
+  "layers_downloaded": false,
+  "engine_executed": false
+}

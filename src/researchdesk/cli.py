@@ -140,6 +140,22 @@ def main():
     evaluation.add_argument("--baseline-id", required=True)
     evaluation.add_argument("--reference", type=Path, required=True)
     evaluation.add_argument("--key", required=True, help="Stable unique key for this comparison")
+    freeze = sub.add_parser(
+        "benchmark-freeze", help="Validate and freeze a versioned source bundle"
+    )
+    freeze.add_argument("--manifest", type=Path, required=True)
+    freeze.add_argument("--protocol", type=Path, required=True)
+    freeze.add_argument("--blobs", type=Path, required=True)
+    freeze.add_argument("--output", type=Path, required=True)
+    pilot = sub.add_parser("benchmark-run", help="Run isolated development pilot attempts")
+    pilot.add_argument("--bundle", type=Path, required=True)
+    pilot.add_argument("--output", type=Path, required=True)
+    pilot.add_argument("--split", choices=["development"], default="development")
+    pilot.add_argument("--max-attempts", type=int, default=1)
+    report = sub.add_parser(
+        "benchmark-report", help="Read all planned and attempted pilot outcomes"
+    )
+    report.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     settings = Settings()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -153,6 +169,33 @@ def main():
         worker(settings, once=args.once)
     elif args.command == "paper-worker":
         paper_worker(settings, once=args.once)
+    elif args.command.startswith("benchmark-"):
+        from researchdesk.research.benchmark_bundle import freeze_bundle
+        from researchdesk.research.benchmark_runner import report, run_suite
+
+        try:
+            if args.command == "benchmark-freeze":
+                if settings.read_only:
+                    raise ValueError("Read-only deployments cannot create benchmark bundles")
+                result = freeze_bundle(
+                    manifest_path=args.manifest,
+                    protocol_path=args.protocol,
+                    blobs=args.blobs,
+                    output=args.output,
+                )
+            elif args.command == "benchmark-run":
+                result = run_suite(
+                    bundle_path=args.bundle,
+                    output=args.output,
+                    split=args.split,
+                    settings=settings,
+                    max_attempts=args.max_attempts,
+                )
+            else:
+                result = report(args.output)
+        except (ValueError, OSError) as exc:
+            raise SystemExit(str(exc)) from exc
+        print(json.dumps(result, indent=2))
     elif args.command == "evaluate-extraction":
         from researchdesk.quality_workflow import evaluate_extraction
 

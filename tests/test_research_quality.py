@@ -306,13 +306,193 @@ def test_serialized_json_keys_joined_fields_and_changed_numbers_are_not_quotes(
     assert "quote_present" in codes(validate_dossier(dossier, evidence))
 
 
-def test_json_pointer_escape_and_missing_or_nontext_path(dossier, evidence):
+def test_json_pointer_escape_and_missing_or_container_path(dossier, evidence):
     ref = dossier["claims"][0]["source_refs"][0]
     ref.update(source_path="/record/a~1b/tilde~0key", excerpt="Synthetic safety data")
     assert validate_dossier(dossier, evidence).valid
     for path in ("/record", "/record/no-such-field", "record/description", "/record/a~2b"):
         ref["source_path"] = path
-        assert "source_path_is_text" in codes(validate_dossier(dossier, evidence))
+        assert "source_path_is_scalar" in codes(validate_dossier(dossier, evidence))
+
+
+def scalar_evidence(dossier, evidence, value, excerpt):
+    """Attach a synthetic scalar while keeping full-content source hashes exact."""
+    source = evidence["synthetic-source"]
+    source["content"]["record"]["scalar"] = value
+    source["sha256"] = content_hash(source["content"])
+    for claim in dossier["claims"]:
+        claim["source_refs"][0].update(
+            artifact_sha256=source["sha256"], source_path="/record/scalar", excerpt=excerpt
+        )
+
+
+@pytest.mark.parametrize(
+    "value,excerpt",
+    [
+        (405, "405"),
+        (0, "0"),
+        (-7, "-7"),
+        (0.25, "0.25"),
+        (1.0, "1.0"),
+        (-0.0, "-0.0"),
+        (1e-7, "1e-07"),
+        (True, "true"),
+        (False, "false"),
+        (None, "null"),
+    ],
+)
+def test_exact_json_pointer_scalar_attribution_preserves_source_and_dossier(
+    dossier, evidence, value, excerpt
+):
+    scalar_evidence(dossier, evidence, value, excerpt)
+    snapshot = deepcopy((dossier, evidence))
+    report = validate_dossier(dossier, evidence)
+    assert report.valid and report.coverage.verified_source_references == 2
+    assert report.coverage.fully_attributed_claims == 2
+    assert any("not claim truth" in item for item in report.limitations)
+    assert (dossier, evidence) == snapshot
+
+
+@pytest.mark.parametrize(
+    "value,excerpt",
+    [
+        (405, "40"),
+        (405, '"405"'),
+        (405, "405 adults"),
+        (405, "4.05e2"),
+        (1.0, "1"),
+        (1, "1.0"),
+        (1e-7, "1e-7"),
+        (True, "1"),
+        (True, "True"),
+        (False, "0"),
+        (False, "FALSE"),
+        (None, "None"),
+        (None, '"null"'),
+    ],
+)
+def test_scalar_excerpt_requires_complete_canonical_value_without_coercion(
+    dossier, evidence, value, excerpt
+):
+    scalar_evidence(dossier, evidence, value, excerpt)
+    report = validate_dossier(dossier, evidence)
+    assert not report.valid and "quote_present" in codes(report)
+    assert "source_path_is_scalar" not in codes(report)
+    assert report.coverage.verified_source_references == 0
+
+
+@pytest.mark.parametrize("value,excerpt", [(405, "405"), (False, "false"), (None, "null")])
+def test_scalar_values_are_not_discoverable_without_exact_pointer(
+    dossier, evidence, value, excerpt
+):
+    scalar_evidence(dossier, evidence, value, excerpt)
+    for claim in dossier["claims"]:
+        claim["source_refs"][0]["source_path"] = None
+    assert "quote_present" in codes(validate_dossier(dossier, evidence))
+
+
+@pytest.mark.parametrize(
+    "value,excerpt",
+    [({"count": 405}, '{"count":405}'), ([405], "[405]"), (["405"], "405")],
+)
+def test_pointer_selected_containers_never_become_scalar_or_nested_text_evidence(
+    dossier, evidence, value, excerpt
+):
+    scalar_evidence(dossier, evidence, value, excerpt)
+    report = validate_dossier(dossier, evidence)
+    assert {"source_path_is_scalar", "quote_present"} <= codes(report)
+
+
+def test_null_is_distinct_from_absent_path_and_invalid_root_source(dossier, evidence):
+    scalar_evidence(dossier, evidence, None, "null")
+    ref = dossier["claims"][0]["source_refs"][0]
+    for path in ("/record/missing", "/record/scalar/nested", "/record/~2"):
+        ref["source_path"] = path
+        assert {"source_path_is_scalar", "quote_present"} <= codes(
+            validate_dossier(dossier, evidence)
+        )
+    source = evidence["synthetic-source"]
+    source["content"] = None
+    source["sha256"] = content_hash(None)
+    for claim in dossier["claims"]:
+        claim["source_refs"][0].update(source_path="", artifact_sha256=source["sha256"])
+    assert validate_dossier(dossier, evidence).valid
+    del source["content"]
+    assert {"source_content_integrity", "source_path_is_scalar", "quote_present"} <= codes(
+        validate_dossier(dossier, evidence)
+    )
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_nonfinite_scalar_source_cannot_pass_hash_or_attribution(dossier, evidence, value):
+    scalar_evidence(dossier, evidence, 405, "405")
+    evidence["synthetic-source"]["content"]["record"]["scalar"] = value
+    assert {"source_content_integrity", "source_version_match", "quote_present"} <= codes(
+        validate_dossier(dossier, evidence)
+    )
+
+
+def test_scalar_mutation_and_nested_hash_do_not_bypass_full_source_integrity(dossier, evidence):
+    scalar_evidence(dossier, evidence, 405, "405")
+    source = evidence["synthetic-source"]
+    source["content"]["record"]["scalar"] = 403
+    for claim in dossier["claims"]:
+        claim["source_refs"][0]["excerpt"] = "403"
+    assert {"source_content_integrity", "source_version_match"} <= codes(
+        validate_dossier(dossier, evidence)
+    )
+    source["sha256"] = content_hash(source["content"]["record"]["scalar"])
+    for claim in dossier["claims"]:
+        claim["source_refs"][0]["artifact_sha256"] = source["sha256"]
+    assert {"source_content_integrity", "source_version_match"} <= codes(
+        validate_dossier(dossier, evidence)
+    )
+
+
+def test_scalar_selection_cache_cannot_leak_across_artifacts_or_validation_calls(dossier, evidence):
+    scalar_evidence(dossier, evidence, 405, "405")
+    other = deepcopy(evidence["synthetic-source"])
+    other.update(id="other-case-source")
+    other["content"]["record"]["scalar"] = 403
+    other["sha256"] = content_hash(other["content"])
+    evidence[other["id"]] = other
+    dossier["claims"][1]["source_refs"][0].update(
+        artifact_id=other["id"], artifact_sha256=other["sha256"]
+    )
+    report = validate_dossier(dossier, evidence)
+    assert not report.valid and report.coverage.verified_source_references == 1
+    dossier["claims"][1]["source_refs"][0]["excerpt"] = "403"
+    assert validate_dossier(dossier, evidence).valid
+
+    # A new case with a reused local artifact identifier must use only its supplied
+    # source contents; prior successful validation cannot authorize another value.
+    second_case = {"synthetic-source": deepcopy(evidence["synthetic-source"])}
+    second_case["synthetic-source"]["content"]["record"]["scalar"] = 999
+    second_case["synthetic-source"]["sha256"] = content_hash(
+        second_case["synthetic-source"]["content"]
+    )
+    for claim in dossier["claims"]:
+        claim["source_refs"][0].update(
+            artifact_id="synthetic-source",
+            artifact_sha256=second_case["synthetic-source"]["sha256"],
+            excerpt="405",
+        )
+    report = validate_dossier(dossier, second_case)
+    assert not report.valid and report.coverage.verified_source_references == 0
+
+
+def test_scalar_array_index_and_escaped_property_resolve_only_selected_value(dossier, evidence):
+    source = evidence["synthetic-source"]
+    source["content"]["record"]["a/b"]["counts~"] = [None, 405]
+    source["sha256"] = content_hash(source["content"])
+    for claim in dossier["claims"]:
+        claim["source_refs"][0].update(
+            artifact_sha256=source["sha256"], source_path="/record/a~1b/counts~0/1", excerpt="405"
+        )
+    assert validate_dossier(dossier, evidence).valid
+    for path in ("/record/a~1b/counts~0/0", "/record/a~1b/counts~0/01"):
+        dossier["claims"][0]["source_refs"][0]["source_path"] = path
+        assert "quote_present" in codes(validate_dossier(dossier, evidence))
 
 
 def test_inference_requires_explanation_and_remains_unverified_truth(dossier, evidence):

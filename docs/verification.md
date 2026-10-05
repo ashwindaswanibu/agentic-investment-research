@@ -65,3 +65,43 @@ without Docker or market/model credentials, recorded `data_blocked` with
 `FEED_UNCONFIGURED`, and produced zero ledger events/observations. Read-only mode
 exited before creating its test database. The disposable container and temporary
 image were removed. Compose configuration validation passed without exposing secrets.
+
+## M1 reproducibility foundation, 2026-10-05
+
+The [pilot runner](benchmark-runner.md) now provides frozen manifests/source
+bundles, isolated attempt stores, a complete case/arm/repetition matrix and a
+shared model-call journal around the actual application runtime. Final holdout
+execution is closed. This milestone establishes engineering behavior, not model
+quality or the success of adaptive research.
+
+- **555 Python tests passed**, with 19 external integration/sandbox/live checks
+  deselected. The one warning is the existing upstream Starlette/httpx deprecation.
+  Ruff lint/format and diff whitespace checks passed. No frontend code changed.
+- Independent review reproduced and fixed symlinked bundle paths, recovery-time
+  deadline misclassification, unbound effective provider timeouts, incomplete
+  usage reporting and overly permissive output permissions.
+- Tests exercise the real Runtime/MeteredProvider persistence boundary: crash
+  after a cached response but before conversation checkpoint; crash with a request
+  in flight; lease expiry and resume; and crash before final journal commit.
+  Scripted model fixtures are explicitly synthetic. A returned response is reused
+  without another provider call; an unknown outcome is not silently retried.
+- Actual source acquisition retained 11 successful raw responses, including six
+  evidence blobs for three clinical families. All six imported through the real
+  runner preparation path into three isolated temporary SQLite stores with exact
+  hashes, mapped artifact identities and idempotent repeat import. No labels,
+  projections or cross-case evidence were imported. Temporary stores were removed.
+- Numeric, boolean and null JSON-pointer attribution is implemented and tested.
+  These checks establish retained source-value presence, not claim entailment.
+- The [options spike](decisions/options-engine-spike.md) executed six scenarios
+  through pinned Nautilus 2.0.0rc6 in a separate environment. Funded exercise and
+  worthless expiry matched independent arithmetic. Funding errors, missing/stale
+  settlement data and unstable lifecycle IDs remain adoption blockers. LEAN
+  container metadata was inspected; its runtime has not been executed.
+
+Real clinical cases remain unlabelled and unscored. The current extraction schema
+cannot faithfully represent some source/analysis/population distinctions; the
+[reference contract decision](decisions/0003-clinical-reference-scope.md) records
+the next required work. No real provider-driven benchmark, independently
+adjudicated quality gain, authenticated market operation or public deployment
+was completed by this milestone. The new local runner is SQLite/single-process;
+it does not claim a distributed or PostgreSQL benchmark execution path.

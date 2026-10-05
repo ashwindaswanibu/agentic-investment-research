@@ -1,9 +1,13 @@
 # M1: clinical research evaluation protocol
 
-Status: design specification, 2026-10-05. No real-world score has been measured.
+Status: quality-comparison design specification, 2026-10-05. No real-world score has been measured.
 Dataset manifest, adjudicated references, model versions, sample-size rationale,
 run budgets and decision thresholds must be frozen before a final comparison.
 This specification follows the [engineering roadmap](engineering-roadmap.md).
+The [development pilot runner](benchmark-runner.md), frozen manifests and isolated
+attempt journal are implemented. The [three-case real corpus](research-benchmark-data.md)
+is acquired and import-verified but unlabelled. [ADR 0003](decisions/0003-clinical-reference-scope.md)
+records why source-qualified reference work is required before scoring it.
 
 ## Question and useful target
 
@@ -85,8 +89,7 @@ errors, obtain new independent final cases before making a renewed claim.
 
 ## Next executable steps
 
-- Build the versioned case/source/reference manifest and split validator.
-- Audit evidence availability and choose a tractable extraction-first case set.
+- Implement the source-qualified reference contract and explicit scored-field scope.
 - Have references checked independently; record unresolved domain judgments.
 - Run the real provider on a pilot after local authentication is available.
 - Freeze the final protocol and execute the paired comparison with retained traces.

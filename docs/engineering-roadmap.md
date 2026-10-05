@@ -69,7 +69,7 @@ Dependency, model, source and market changes require regression checks.
 | Forecasting and evaluation | Measure whether registered beliefs improve over credible base rates, including calibration, abstentions, resolution changes and selected/rejected ideas. | Prospective forecast registry with predeclared resolution rules; proper scoring, baseline comparison, uncertainty and retained all-attempt history. Historical extraction tests remain a different evaluation. | Forecast fields exist; prospective resolution/calibration and independent research benchmark are unfinished. |
 | Strategy research | Convert mechanisms into executable policies and test economic usefulness under point-in-time inputs, costs and selection bias. | Reproduce a hand-calculated case and an independent engine; chronological validation, declared search history and untouched final periods. Include cash/no-trade and simple baselines. | Daily single-asset long-only experiments exist; generated-policy historical results are diagnostics, not uncontaminated out-of-sample proof. |
 | Portfolio construction and risk | Allocate scarce capital across correlated opportunities and options exposures, with hard deterministic controls independent of agents. | Versioned mandate, cash/exposure accounting, stress scenarios, correlated signals, integer positions and explained rejection. Compare underlying, option structures and no trade. | Equity cash/concentration controls exist; cross-asset allocation, Greeks, collateral and stress-policy qualification remain. Numeric autonomous limits are not user-finalized. |
-| Execution, lifecycle and reconciliation | Operate a paper portfolio through partial fills, cancellations, restarts, corporate actions, expiration, assignment and reconciliation. | Finish a bounded equities monitor first; then compare established engines for options. Require lifecycle golden cases and independent accounting comparison before options admission. | Local equities/ETF ledger exists; quote/calendar/performance adapters are in progress. No options execution or live authority. |
+| Execution, lifecycle and reconciliation | Operate a paper portfolio through partial fills, cancellations, restarts, corporate actions, expiration, assignment and reconciliation. | Qualify the authenticated equities feed; compare established engines for options. Require lifecycle golden cases and independent accounting comparison before options admission. | Bounded equities monitoring, quote/calendar/performance adapters and atomic observations are implemented and locally verified. Authenticated feed operation, options execution and live authority are absent. |
 | Monitoring and reassessment | Every position has a thesis, dependencies, review times, failure/exit conditions and known data freshness; material changes trigger bounded reassessment. | Persist monitoring contracts and deduplicated source-change events; replay outages, missed events, redundant signals, expired decisions and thesis invalidation. | Worker heartbeats exist; complete continuous research and position-management loop remains. |
 | Workbench and observability | Follow one decision from signal through sources, competing views, code, tests, forecast, allocation, execution and later outcome. | Inspect real runs; show gaps, blocked states, staleness and exact versions. Keyboard, narrow-screen, auth and conflict paths pass. Trace IDs connect UI actions to server events. | Inspectable workbench exists; full decision-to-outcome lineage and operational alerting remain. |
 | Deployment and public showcase | A new reviewer can reproduce a meaningful workflow securely and distinguish verified results from aspirations. | Fresh checkout, locked dependencies, migration/restore drill, secret/history audit, CI, real run walkthrough, explicit limitations and verified public links. | Local/container checks exist; public repository creation, remote CI and authenticated model demonstration remain pending access. |
@@ -95,6 +95,13 @@ Establish the baseline and test set before prompt optimization. Authenticate a
 real provider locally to run it; until then retain the missing integration gate.
 This remains the leading product priority. The concrete evaluation design is in
 [the M1 protocol](research-evaluation-protocol.md).
+The [frozen pilot harness](benchmark-runner.md) now retains isolated attempts,
+global call budgets and crash receipts. Three real clinical families were acquired
+and import-verified. They remain unscored: [ADR 0003](decisions/0003-clinical-reference-scope.md)
+identified source/analysis/population distinctions that the current reference
+schema cannot faithfully represent. That reference contract is the next M1 gate.
+[ADR 0004](decisions/0004-benchmark-harness.md) also requires an Inspect compatibility
+spike before growing custom evaluation scheduling or dashboards.
 Freeze the benchmark protocol before optimization: independently adjudicated
 references, critical-error categories, issuer/trial-family separation between
 development and final cases, repeated trials, budget-matched baselines, calibrated
@@ -106,6 +113,10 @@ Run the read-only options engine/data feasibility spike alongside M1 so unavaila
 historical chains or lifecycle support surface early. This parallel design research
 does not defer options discovery until prospective outcomes resolve, and does not
 authorize options admission before M4.
+The [executed first spike](decisions/options-engine-spike.md) found funded-expiry
+agreement plus partial-error state and missing/stale-settlement-input failures in
+a pinned Nautilus release candidate. No engine is selected; LEAN runtime comparison
+and broader lifecycle tests remain outstanding.
 
 **M2 — measure adaptive specialists and reusable tools.** Extend M1 with a
 signal-driven capability gap, domain/prompt specification, coder implementation,

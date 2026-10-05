@@ -1,0 +1,434 @@
+{
+  "synthetic": true,
+  "production_qualified": false,
+  "python_version": "3.12.14",
+  "platform": "macOS-14.7.7-arm64-arm-64bit",
+  "nautilus_commit": "7b766f8825b2539c5b2ac1375e9d97b41c509edb",
+  "assumptions": {
+    "instrument": "Unadjusted USD equity call, strike100, multiplier100, deliverable100shares",
+    "fees": "Zero explicitly configured; fees are not independently qualified here",
+    "execution": "Synthetic bid/ask tape, liquidity_consumption=True, no latency or queue model",
+    "exercise": "Expiry only; American early exercise/assignment not established"
+  },
+  "funded_itm": {
+    "synthetic": true,
+    "engine": "2.0.0rc6",
+    "capital": "20000",
+    "underlying_mode": "trades",
+    "terminal_underlying_price": "110.00",
+    "error": null,
+    "events": [
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "1",
+        "price": "2.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "cancel",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "price": "0.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST.XTEST",
+        "side": "BUY",
+        "quantity": "100",
+        "price": "100.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      }
+    ],
+    "raw_identifiers": [
+      {
+        "client_order_id": "O-20260116-205956-001-000-1",
+        "trade_id": "T-a29c8755ce56676e-001"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-a50b3ce9-321f-4d81-a699-4349787ad03c",
+        "trade_id": "9b66f780-a8f3-4944-8fa4-00a9a7a05ceb"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-6dc561c9-dc39-4cfd-b4d4-5c7a01ae41c3",
+        "trade_id": "c26e2600-f74d-4d8d-b7bd-295b27c8b11e"
+      }
+    ],
+    "cash": "9800.00",
+    "positions": [
+      {
+        "instrument": "TEST.XTEST",
+        "side": "LONG",
+        "quantity": "100",
+        "realized_pnl": "0.00"
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "FLAT",
+        "quantity": "0",
+        "realized_pnl": "-200.00"
+      }
+    ],
+    "orders": [
+      {
+        "instrument": "TEST.XTEST",
+        "side": "BUY",
+        "quantity": "100",
+        "filled_qty": "100",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_PHYSICAL_OPEN"
+        ]
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "2",
+        "filled_qty": "1",
+        "status": "CANCELED",
+        "tags": null
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "filled_qty": "1",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_PHYSICAL_CLOSE"
+        ]
+      }
+    ]
+  },
+  "otm": {
+    "synthetic": true,
+    "engine": "2.0.0rc6",
+    "capital": "20000",
+    "underlying_mode": "trades",
+    "terminal_underlying_price": "90.00",
+    "error": null,
+    "events": [
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "1",
+        "price": "2.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "cancel",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "price": "0.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      }
+    ],
+    "raw_identifiers": [
+      {
+        "client_order_id": "O-20260116-205956-001-000-1",
+        "trade_id": "T-a29c8755ce56676e-001"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-a4b6aad4-2798-473c-8433-d3765eab6d73",
+        "trade_id": "b34969f0-173b-4161-8958-7a6e0921b033"
+      }
+    ],
+    "cash": "19800.00",
+    "positions": [
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "FLAT",
+        "quantity": "0",
+        "realized_pnl": "-200.00"
+      }
+    ],
+    "orders": [
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "2",
+        "filled_qty": "1",
+        "status": "CANCELED",
+        "tags": null
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "filled_qty": "1",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_OTM"
+        ]
+      }
+    ]
+  },
+  "funding_shortfall": {
+    "synthetic": true,
+    "engine": "2.0.0rc6",
+    "capital": "10000",
+    "underlying_mode": "trades",
+    "terminal_underlying_price": "110.00",
+    "error": "Cannot update cash account balance for fill <uuid>: Cash account balance would become negative: -200.00 USD (borrowing not allowed for XTEST-001)",
+    "events": [
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "1",
+        "price": "2.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "cancel",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "price": "0.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST.XTEST",
+        "side": "BUY",
+        "quantity": "100",
+        "price": "100.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      }
+    ],
+    "raw_identifiers": [
+      {
+        "client_order_id": "O-20260116-205956-001-000-1",
+        "trade_id": "T-a29c8755ce56676e-001"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-8eaf8f9b-872a-4d3a-85e6-bfb930a8cef4",
+        "trade_id": "03281f9e-aa8a-4c42-a541-4436675a10cd"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-46824da2-0e5b-4556-881f-202979ad735e",
+        "trade_id": "49ca2878-f65d-47cb-9c24-e9e66ade49db"
+      }
+    ],
+    "cash": "9800.00",
+    "positions": [
+      {
+        "instrument": "TEST.XTEST",
+        "side": "LONG",
+        "quantity": "100",
+        "realized_pnl": "0.00"
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "FLAT",
+        "quantity": "0",
+        "realized_pnl": "-200.00"
+      }
+    ],
+    "orders": [
+      {
+        "instrument": "TEST.XTEST",
+        "side": "BUY",
+        "quantity": "100",
+        "filled_qty": "100",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_PHYSICAL_OPEN"
+        ]
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "2",
+        "filled_qty": "1",
+        "status": "CANCELED",
+        "tags": null
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "filled_qty": "1",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_PHYSICAL_CLOSE"
+        ]
+      }
+    ]
+  },
+  "missing_last_trade": {
+    "synthetic": true,
+    "engine": "2.0.0rc6",
+    "capital": "20000",
+    "underlying_mode": "quotes_only",
+    "terminal_underlying_price": "110.00",
+    "error": null,
+    "events": [
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "1",
+        "price": "2.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "cancel",
+        "ts_event": 1768597196000000000
+      }
+    ],
+    "raw_identifiers": [
+      {
+        "client_order_id": "O-20260116-205956-001-000-1",
+        "trade_id": "T-a29c8755ce56676e-001"
+      }
+    ],
+    "cash": "19800.00",
+    "positions": [
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "LONG",
+        "quantity": "1",
+        "realized_pnl": "0.00"
+      }
+    ],
+    "orders": [
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "2",
+        "filled_qty": "1",
+        "status": "CANCELED",
+        "tags": null
+      }
+    ]
+  },
+  "stale_last_trade": {
+    "synthetic": true,
+    "engine": "2.0.0rc6",
+    "capital": "20000",
+    "underlying_mode": "stale_trade",
+    "terminal_underlying_price": "90.00",
+    "error": null,
+    "events": [
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "1",
+        "price": "2.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "cancel",
+        "ts_event": 1768597196000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "price": "0.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      },
+      {
+        "event": "fill",
+        "instrument": "TEST.XTEST",
+        "side": "BUY",
+        "quantity": "100",
+        "price": "100.00",
+        "commission": "0.00 USD",
+        "ts_event": 1768597200000000000
+      }
+    ],
+    "raw_identifiers": [
+      {
+        "client_order_id": "O-20260116-205956-001-000-1",
+        "trade_id": "T-a29c8755ce56676e-001"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-001a903e-2036-4aee-8f66-8c53f2996dc5",
+        "trade_id": "0b330213-36f6-4fc5-ba64-7d6382c1b418"
+      },
+      {
+        "client_order_id": "EXPIRATION-XTEST-3d050f0a-c647-4b72-a2a0-3765b364e6bb",
+        "trade_id": "8f6663db-45cf-4837-be00-b61fa7fa9a21"
+      }
+    ],
+    "cash": "9800.00",
+    "positions": [
+      {
+        "instrument": "TEST.XTEST",
+        "side": "LONG",
+        "quantity": "100",
+        "realized_pnl": "0.00"
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "FLAT",
+        "quantity": "0",
+        "realized_pnl": "-200.00"
+      }
+    ],
+    "orders": [
+      {
+        "instrument": "TEST.XTEST",
+        "side": "BUY",
+        "quantity": "100",
+        "filled_qty": "100",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_PHYSICAL_OPEN"
+        ]
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "BUY",
+        "quantity": "2",
+        "filled_qty": "1",
+        "status": "CANCELED",
+        "tags": null
+      },
+      {
+        "instrument": "TEST260116C00100000.XTEST",
+        "side": "SELL",
+        "quantity": "1",
+        "filled_qty": "1",
+        "status": "FILLED",
+        "tags": [
+          "EXPIRATION_XTEST_PHYSICAL_CLOSE"
+        ]
+      }
+    ]
+  },
+  "economic_replay_equal": true,
+  "settlement_identifiers_replay_equal": false
+}

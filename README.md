@@ -168,6 +168,7 @@ labelled and cannot authorize orders. Python versions are recorded in
 
 - [Staged engineering roadmap and acceptance gates](docs/engineering-roadmap.md)
 - [Options engine comparison decision](docs/decisions/0002-options-engine-comparison.md)
+- [Executed options-engine feasibility spike](docs/decisions/options-engine-spike.md)
 - [Paper operations](docs/paper-operations.md)
 - [Architecture](docs/architecture.md)
 - [Operations](docs/operations.md)
@@ -175,6 +176,9 @@ labelled and cannot authorize orders. Python versions are recorded in
 - [Implementation contracts](docs/implementation-contract.md)
 - [Research quality and specialist development](docs/research-quality.md)
 - [M1 research evaluation protocol](docs/research-evaluation-protocol.md)
+- [Frozen development pilot runner](docs/benchmark-runner.md)
+- [Evaluation framework comparison and adoption gate](docs/decisions/0004-benchmark-harness.md)
+- [Real clinical development corpus and limits](docs/research-benchmark-data.md)
 - [Local verification record](docs/verification.md)
 
 Credentials, local research, acquired market datasets, caches, and account state

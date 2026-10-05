@@ -1,0 +1,3 @@
+# Isolated feasibility environment only; not a ResearchDesk runtime dependency.
+--only-binary=:all:
+nautilus-trader==2.0.0rc6

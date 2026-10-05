@@ -1,8 +1,8 @@
 """Pure structural/provenance checks and reference-based extraction scoring.
 
 No network, model call, clock, store mutation or clinical efficacy judgment occurs
-here. A matched quotation proves its presence in a retained source, not that the
-source is true or that it entails the associated claim.
+here. A matched quotation or JSON scalar proves its presence in a retained source,
+not that the source is true or that it entails the associated claim.
 """
 
 from __future__ import annotations
@@ -35,6 +35,9 @@ equating trial completion with public readout. Use 'unknown' and record missing
 inputs instead of guessing. Separate source-reported facts from your inferences.
 Every claim needs an exact excerpt from a retained evidence artifact, the artifact's
 ID and full-content SHA-256; nested-source hashes are not artifact hashes. Link each
+numeric, boolean or null citation to its exact JSON pointer and quote the complete
+canonical JSON value (for example 405, false or null), without quotation marks.
+Text excerpts remain case-sensitive, whitespace-normalized quotations. Link each
 trial, arm and endpoint to the supporting claim IDs. For inferences, explain the
 reasoning gap; citation presence does not establish the inference. Record contrary
 evidence, the search/coverage limitations, unresolved inputs and uncertainty.
@@ -45,7 +48,7 @@ from registry entries, publication metadata or a successfully validated dossier.
 """
 
 LIMITATIONS = [
-    "Checks establish structure, source integrity and quotation presence, not claim truth "
+    "Checks establish structure, source integrity and quotation/scalar presence, not claim truth "
     "or evidentiary support for an inference.",
     "A source labelled fact is a reported assertion, not an independently verified clinical fact.",
     "Completeness, prespecification, source availability at the cutoff and forecast quality "
@@ -115,6 +118,21 @@ def _strings(value: Any):
     elif isinstance(value, list):
         for child in value:
             yield from _strings(child)
+
+
+def _scalar_excerpt(value: Any) -> str:
+    """Encode a non-text JSON scalar using the artifact hash's JSON convention.
+
+    This is the complete parsed value, not a substring, coercion, original JSON
+    numeric lexeme or clinical interpretation. Integers and floats retain their
+    serializer spelling (1 differs from 1.0); booleans/null are lowercase. NaN and
+    infinity are rejected. Text uses the existing quotation path instead.
+    """
+    if value is not None and type(value) not in (bool, int, float):
+        raise ValueError("A scalar citation must select a JSON scalar.")
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+    )
 
 
 def _pointer(content: Any, pointer: str) -> Any:
@@ -189,7 +207,7 @@ def validate_dossier(
         except (TypeError, KeyError, OverflowError, RecursionError):
             invalid_sources.add(identifier)
     source_hashes: dict[str, str | None] = {}
-    normalized_sources: dict[tuple[str, str | None], tuple[bool, tuple[str, ...]]] = {}
+    normalized_sources: dict[tuple[str, str | None], tuple[str | None, tuple[str, ...]]] = {}
     checks: list[QualityCheck] = []
 
     def check(code: str, path: str, passed: bool, message: str) -> bool:
@@ -325,30 +343,45 @@ def validate_dossier(
             cache_key = (source.artifact_id, source.source_path)
             if cache_key not in normalized_sources:
                 if source.source_path is not None:
+                    selection_kind, excerpts = None, ()
                     try:
+                        if actual_hash is None:
+                            raise ValueError("The source content is not valid JSON.")
                         selected = _pointer(content, source.source_path)
-                    except (KeyError, ValueError, IndexError, TypeError):
-                        selected = None
-                    is_text = isinstance(selected, str)
-                    texts = (selected,) if is_text else ()
+                        if isinstance(selected, str):
+                            selection_kind, excerpts = "text", (_normalize(selected),)
+                        else:
+                            excerpts = (_scalar_excerpt(selected),)
+                            selection_kind = "scalar"
+                    except (KeyError, ValueError, IndexError, TypeError, OverflowError):
+                        pass
                 else:
-                    is_text, texts = False, _strings(content)
-                normalized_sources[cache_key] = (is_text, tuple(_normalize(text) for text in texts))
-            is_text, strings = normalized_sources[cache_key]
+                    selection_kind = "search"
+                    excerpts = tuple(_normalize(text) for text in _strings(content))
+                normalized_sources[cache_key] = (selection_kind, excerpts)
+            selection_kind, strings = normalized_sources[cache_key]
             if source.source_path is not None:
                 check(
-                    "source_path_is_text",
+                    "source_path_is_scalar",
                     path + "/source_path",
-                    is_text,
-                    "The JSON pointer must resolve to an actual string value.",
+                    selection_kind in ("text", "scalar"),
+                    "The JSON pointer must resolve to a string, finite number, boolean or null; "
+                    "missing values, objects and arrays do not qualify.",
                 )
             excerpt = _normalize(source.excerpt)
+            present = (
+                excerpt in strings
+                if selection_kind == "scalar"
+                else any(excerpt in text for text in strings)
+            )
             check(
                 "quote_present",
                 path + "/excerpt",
-                bool(excerpt) and any(excerpt in text for text in strings),
+                bool(excerpt) and present,
                 "The whitespace-normalized, case-sensitive excerpt must occur within "
-                "one source string; JSON serialization and joined fields do not count.",
+                "one source string, or exactly equal the complete canonical JSON value of "
+                "a pointer-selected finite number, boolean or null. Serialized containers "
+                "and joined fields do not count.",
             )
             reference_verified = all(item.passed for item in checks[start:])
             verified_references += int(reference_verified)
