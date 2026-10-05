@@ -1,5 +1,10 @@
 # Architecture and implemented boundaries
 
+The [generated agent, prompt and tool map](generated/agent-architecture.md) includes
+every registered tool, per-role diagrams, the shared prompt, dynamic specialist
+and task prompt assembly, and the experiment-assessment path. Regenerate it with
+`python -m researchdesk.architecture`; the test suite checks for drift.
+
 Research Desk stores work as cases, bounded tasks, immutable artifacts, tool calls
 and ordered events. A coordinator can delegate research, coding and review tasks.
 The role roster is small; broad coverage comes from assignments, evidence tools

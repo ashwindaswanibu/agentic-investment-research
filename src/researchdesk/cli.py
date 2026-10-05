@@ -131,6 +131,10 @@ def main():
     )
     paper_job.add_argument("--once", action="store_true")
     sub.add_parser("doctor", help="Show nonsecret provider, storage, and sandbox readiness")
+    assessment = sub.add_parser(
+        "assess-strategy", help="Persist a deterministic assessment of a saved experiment"
+    )
+    assessment.add_argument("--experiment-id", required=True)
     evaluation = sub.add_parser(
         "evaluate-extraction",
         help="Operator-only comparison of frozen candidate and baseline dossiers",
@@ -176,6 +180,17 @@ def main():
         worker(settings, once=args.once)
     elif args.command == "paper-worker":
         paper_worker(settings, once=args.once)
+    elif args.command == "assess-strategy":
+        from researchdesk.domain import artifact_ref
+        from researchdesk.quant.assessment import assess_saved_experiment
+
+        if settings.read_only:
+            raise SystemExit("Read-only deployments cannot persist assessments.")
+        store = Store(settings.database_url)
+        try:
+            print(json.dumps(artifact_ref(assess_saved_experiment(store, args.experiment_id))))
+        finally:
+            store.close()
     elif args.command.startswith("benchmark-"):
         from researchdesk.research.benchmark_bundle import freeze_bundle
         from researchdesk.research.benchmark_runner import report, run_suite

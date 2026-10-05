@@ -74,6 +74,7 @@ export function investigationReading(data: CaseDetail) {
     analyses: artifacts.filter((a) =>
       [
         "experiment",
+        "strategy_assessment",
         "research_tool_result",
         "code",
         "review",

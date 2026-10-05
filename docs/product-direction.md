@@ -43,6 +43,31 @@ verification. Document agents, prompt sources, tool permissions and delegation
 paths in architecture diagrams linked to the actual implementation; update those
 maps alongside relevant code changes.
 
+This is an exploratory phase. Run many distinct strategy experiments in parallel,
+including frequent-opportunity strategies; do not prematurely narrow the research
+to one instrument, specialty or holding period. Each strategy needs a recorded
+rationale, fixed evaluation rules, attributable paper results and immutable
+versions. Preserve failed candidates and the complete search history. Review
+outcomes after several weeks and make revisions as new versions, without erasing
+the earlier record or reusing a final holdout for tuning.
+
+Increase learning speed through broader eligible universes, historical replay and
+parallel prospective experiments. Track qualifying opportunities, entered and
+completed positions, holding periods, costs, market exposure and correlated
+events. An order fill, a spread leg and an independent strategy outcome are
+different units. High daily activity is a research aim, not a quota that silently
+relaxes a strategy's entry rules. Longer-horizon outcomes still need their stated
+time to mature. Keep hypothetical strategy books separately attributable; any
+combined portfolio must also obey one shared economic cash/collateral constraint.
+These experiment-management capabilities are requirements, not yet a qualified
+continuous operating system.
+
+Discard weak ideas from active research when the rationale is unsupported,
+evaluation is invalid, or adequate evidence contradicts the thesis. Preserve the
+candidate, evidence and reason as an immutable rejection. Distinguish insufficient
+evidence from evidence against a thesis. Reopening a rejected idea needs a stated
+new basis; writing quality and sunk engineering effort are not reasons to keep it.
+
 ## One active deliverable
 
 The guided mechanical evaluation checkpoint is implemented and locally verified;
@@ -54,13 +79,19 @@ The investigation overview is implemented and locally verified; see its
 questions and evidence now precede execution counters; linked evidence can be
 opened across cases. This completes that bounded page change, not the whole UX.
 
-**Now: automatic assessment of strategy experiments.** Inspect the real saved
-strategy and results, then implement a persisted assessment produced by the
-experiment workflow. It must distinguish observed historical profitability from
-validated edge, compare the existing baselines, identify unsupported claims and
-missing evaluation evidence, and expose the result in the workbench. No new
-strategy search, autonomous trading activation or options engine in this step.
-Finish and verify this path before beginning another component.
+Automatic strategy assessment is implemented and locally verified; see its
+[verification record](research/strategy-assessment.md). New experiments retain
+the report automatically; existing records can receive an immutable annotation.
+It reconciles recorded metrics, compares baselines and exposure, and identifies
+missing validation. It does not restrict exploratory strategy ideas or establish
+predictive edge. The generated architecture map covers prompts, roles and tools.
+
+**Now: options-chain ingestion and contract validation.** Retain real contract
+identity, expiries, strikes, bid/ask observations, timestamps and feed provenance;
+make unsupported, missing or stale inputs explicit. Complete the bounded adapter,
+its tests and visible research output before implementing options selection or
+lifecycle accounting. Authenticated provider access is a separate qualification
+dependency; fixture tests cannot substitute for an actual provider run.
 
 Research
 papers such as [RD-Agent(Q)](https://arxiv.org/html/2505.15155v1) and its

@@ -31,6 +31,15 @@ all children finish. A child's completion is not proof that its claims are corre
 inspect returned artifacts and arrange independent review. No live trading exists.
 Do not claim a strategy works merely because code runs. Report limitations and
 blocked dependencies accurately. Finish with a concise evidence-backed summary.
+Experiments include a deterministic strategy assessment. Inspect its baseline,
+exposure and validation gaps before recommending further research. A completed
+experiment, profitable backtest or accepting review does not establish alpha.
+Retain failed results; do not tune a strategy against a declared final holdout.
+Abandon unsupported ideas rather than polishing them into recommendations. Ask
+the coordinator to record a rejected hypothesis with its evidence and reason;
+link an existing hypothesis when revising its disposition. Use inconclusive when
+evidence is insufficient, and distinguish an invalid experiment from a falsified
+thesis. Preserve the record so future research can learn from the rejection.
 """
 
 

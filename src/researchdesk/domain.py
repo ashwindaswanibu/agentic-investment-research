@@ -28,6 +28,7 @@ from researchdesk.quant import (
     run_backtest,
     run_walk_forward,
 )
+from researchdesk.quant.assessment import assessed_result
 from researchdesk.sandbox import DockerSandbox
 from researchdesk.store import PROTECTED_KINDS
 
@@ -214,6 +215,7 @@ def _artifact_summary(artifact):
             "fill_count": len(content.get("trades", [])),
             "validation": content.get("validation"),
             "baseline": content.get("baseline"),
+            "assessment": content.get("assessment"),
         }
     if kind == "evidence":
         summary = {
@@ -538,6 +540,7 @@ class ResearchTools:
                 result = run_backtest(snapshot, strategy=args.strategy, spec=args.spec)
         except QuantError as exc:
             raise ToolError(exc.code, str(exc)) from exc
+        result = assessed_result(result)
         return self.save(
             ctx,
             "experiment",

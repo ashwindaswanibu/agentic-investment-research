@@ -39,6 +39,7 @@ KINDS = {
     "dataset",
     "code",
     "experiment",
+    "strategy_assessment",
     "review",
     "note",
     "paper_intent",

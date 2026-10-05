@@ -204,6 +204,11 @@ def test_generated_strategy_container_receives_only_increasing_history_prefixes(
     result = tools.experiment(
         coder, ExperimentInput(dataset_id=data["id"], mode="generated_strategy", code_id=code["id"])
     )
+    assert result["content"]["assessment"]["status"] == "assessed"
+    assert result["content"]["assessment"]["edge_status"] == "unestablished"
+    assert (
+        store.get_artifact(result["id"])["content"]["assessment"] == result["content"]["assessment"]
+    )
     assert [len(item["history"]) for item in observed] == [1, 2, 3, 4]
     assert all("artifacts" not in item and "future" not in item for item in observed)
     assert result["metadata"]["inputs"] == [artifact_ref(data), artifact_ref(code)]

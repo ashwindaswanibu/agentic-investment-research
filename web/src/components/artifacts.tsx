@@ -33,12 +33,14 @@ import {
   StructuredValues,
 } from "./ui";
 import { ResearchArtifactContent } from "./research-artifacts";
+import { StrategyAssessment } from "./strategy-assessment";
 
 export const artifactIcons: Partial<Record<string, LucideIcon>> = {
   evidence: FileText,
   dataset: Database,
   code: Code2,
   experiment: FlaskConical,
+  strategy_assessment: ShieldCheck,
   review: ShieldCheck,
   note: FileText,
   paper_intent: GitBranch,
@@ -147,6 +149,7 @@ export function ExperimentContent({ content }: { content: Json }) {
     : [];
   return (
     <div className="experiment-content">
+      <StrategyAssessment value={content.assessment} />
       {typeof content.status === "string" && <Status value={content.status} />}
       {primary.length > 0 && (
         <div
@@ -401,6 +404,8 @@ export function ReviewContent({ content }: { content: Json }) {
   );
 }
 export function ArtifactContent({ artifact }: { artifact: Artifact }) {
+  if (artifact.kind === "strategy_assessment")
+    return <StrategyAssessment value={artifact.content} />;
   if (
     [
       "clinical_dossier",
@@ -490,7 +495,10 @@ export function ArtifactModal({
             <div>
               <dt>Producing task</dt>
               <dd className="mono">
-                {artifact.task_id || "Uploaded artifact"}
+                {artifact.task_id ||
+                  (artifact.kind === "strategy_assessment"
+                    ? "System assessment"
+                    : "Uploaded artifact")}
               </dd>
             </div>
           </dl>
