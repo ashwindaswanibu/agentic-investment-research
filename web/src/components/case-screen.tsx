@@ -11,6 +11,7 @@ import {
   Terminal,
 } from "lucide-react";
 import {
+  EVIDENCE_ARTIFACT_KINDS,
   parseCase,
   parseArtifact,
   parseCaseDetail,
@@ -111,7 +112,7 @@ export function CaseScreen({ caseId }: { caseId: string }) {
         { signal: controller.signal },
       );
       if (
-        !["evidence", "dataset"].includes(artifact.kind) ||
+        !EVIDENCE_ARTIFACT_KINDS.includes(artifact.kind) ||
         artifact.id !== id
       )
         throw new Error(
@@ -168,7 +169,7 @@ export function CaseScreen({ caseId }: { caseId: string }) {
   const data = detail.data;
   const inProgress = ["running", "queued", "waiting"].includes(data.status);
   const evidence = data.artifacts.filter((a) =>
-    ["evidence", "dataset"].includes(a.kind),
+    EVIDENCE_ARTIFACT_KINDS.includes(a.kind),
   );
   return (
     <div className="page case-page">

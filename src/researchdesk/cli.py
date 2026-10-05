@@ -135,6 +135,14 @@ def main():
         "assess-strategy", help="Persist a deterministic assessment of a saved experiment"
     )
     assessment.add_argument("--experiment-id", required=True)
+    for name in ("options-expirations", "options-chain"):
+        options = sub.add_parser(name, help="Retain delayed Tradier options research evidence")
+        options.add_argument("--case-id", required=True)
+        options.add_argument("--underlying", required=True)
+        options.add_argument("--purpose", required=True)
+        options.add_argument("--source-artifact-id", action="append", default=[])
+        if name == "options-chain":
+            options.add_argument("--expiration", required=True, help="YYYY-MM-DD")
     evaluation = sub.add_parser(
         "evaluate-extraction",
         help="Operator-only comparison of frozen candidate and baseline dossiers",
@@ -180,6 +188,42 @@ def main():
         worker(settings, once=args.once)
     elif args.command == "paper-worker":
         paper_worker(settings, once=args.once)
+    elif args.command in {"options-expirations", "options-chain"}:
+        from pydantic import ValidationError
+
+        from researchdesk.domain import compact_artifact
+        from researchdesk.errors import DomainError
+        from researchdesk.options_workflow import (
+            OptionsChainInput,
+            OptionsExpirationsInput,
+            acquire_options,
+        )
+
+        if settings.read_only:
+            raise SystemExit("Read-only deployments cannot acquire options data.")
+        values = {
+            "underlying": args.underlying,
+            "purpose": args.purpose,
+            "source_artifact_ids": args.source_artifact_id,
+        }
+        schema = OptionsExpirationsInput
+        if args.command == "options-chain":
+            schema = OptionsChainInput
+            values["expiration"] = args.expiration
+        try:
+            request = schema.model_validate(values)
+        except ValidationError as exc:
+            raise SystemExit(
+                "Invalid options request; check symbol, expiry and research purpose."
+            ) from exc
+        store = Store(settings.database_url)
+        try:
+            result = acquire_options(ResearchTools(store, settings), request, case_id=args.case_id)
+            print(json.dumps(compact_artifact(result), indent=2))
+        except DomainError as exc:
+            raise SystemExit(f"{exc.code}: {exc.message}") from None
+        finally:
+            store.close()
     elif args.command == "assess-strategy":
         from researchdesk.domain import artifact_ref
         from researchdesk.quant.assessment import assess_saved_experiment
@@ -273,6 +317,8 @@ def main():
         finally:
             store.close()
     else:
+        from researchdesk.options_workflow import options_provider
+
         store = Store(settings.database_url)
         try:
             print(
@@ -283,6 +329,7 @@ def main():
                         "database": store.engine.dialect.name,
                         "read_only": settings.read_only,
                         "execution_mode": "paper",
+                        "options_data": options_provider(settings).health(),
                     },
                     indent=2,
                 )

@@ -96,9 +96,32 @@ Configure credentials locally in the ignored `.env` file, then run
 | `RESEARCHDESK_OPENAI_API_KEY` | Required for OpenAI; keep local |
 | `RESEARCHDESK_CLAUDE_BINARY` | Optional Claude executable path; authenticate with `claude auth login` |
 | `RESEARCHDESK_RETRIEVAL_MODE` | `lexical` (default) or `dense` |
+| `RESEARCHDESK_TRADIER_SANDBOX_TOKEN` | Optional delayed options research data; sandbox token, kept on the worker or local CLI |
 
 Provider usage is billed by the configured service. Model turns and shared tool
 calls are bounded. Worker heartbeats report provider and sandbox readiness.
+
+## Inspect options research data
+
+Agents can discover expirations and acquire one underlying/expiry chain through
+Tradier's free sandbox API. Each acquisition retains quote timestamps, receipt
+time, source provenance and validation issues in an immutable artifact linked
+to its investigation. The inspector supports calls/puts, contract lookup and
+data-issue filters. These delayed snapshots cannot authorize execution.
+
+The same acquisition path is available without a model key:
+
+```sh
+researchdesk options-expirations --case-id CASE_ID --underlying SYMBOL \
+  --purpose "Find expirations covering the hypothesis horizon."
+researchdesk options-chain --case-id CASE_ID --underlying SYMBOL \
+  --expiration YYYY-MM-DD --purpose "Inspect the quoted cost of this research thesis."
+```
+
+Configure the sandbox token in the ignored `.env` first. Commands require an
+existing case and write access. A new command captures a new observation; it does
+not replace old evidence. See [options data and verification](docs/research/options-data.md)
+for timing, contract/size limitations, setup and the explicitly synthetic UI fixture.
 
 ## Inspect a real computation without a model key
 
@@ -126,9 +149,10 @@ historical experiments are diagnostics; stronger claims require independent
 code review and genuinely withheld evaluation.
 
 Dividend/split intervals are rejected rather than silently mis-accounted.
-Options tools compute expiration scenarios, without execution or lifecycle
-accounting. Clinical comparisons compute uncertainty intervals from supplied
-counts; reviewers must check the counts against sources. Neither clinical
+Options tools retain delayed chain observations and compute explicit expiration
+scenarios, without options execution or lifecycle accounting. Clinical comparisons
+compute uncertainty intervals from supplied counts; reviewers must check the
+counts against sources. Neither clinical
 efficacy nor investment alpha follows merely from a successful tool call.
 
 Paper orders require an accepted version-specific experiment, fresh attributable

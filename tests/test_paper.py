@@ -196,6 +196,48 @@ def test_predecision_fill_and_unmarketable_limit_and_no_size_rejected():
     assert error.value.code == "no_liquidity"
 
 
+@pytest.mark.parametrize("side", ["buy", "sell"])
+def test_fifteen_minute_delayed_quote_cannot_fill_new_order_even_with_loose_freshness(side):
+    events = [opening()]
+    reserve(events, order(quantity=5))
+    fill(events, "one")
+    decision_at = T + timedelta(minutes=16)
+    reserve(events, order(side, quantity=2, order_id="new"), at=decision_at)
+    before = replay(events).as_dict()
+    delayed = quote(at=decision_at - timedelta(minutes=15))
+    # Even if a future caller relaxes age limits, chronology is independent.
+    loose_policy = POLICY.model_copy(update={"max_quote_age_seconds": 1200})
+    with pytest.raises(PaperError) as error:
+        fill(events, "new", delayed, policy=loose_policy, at=decision_at + timedelta(seconds=1))
+    assert error.value.code == "predecision_quote"
+    assert replay(events).as_dict() == before
+
+
+def test_replay_rejects_backdated_quote_even_when_fill_is_applied_after_decision():
+    events = [opening()]
+    decision_at = T + timedelta(minutes=16)
+    reserve(events, order(), at=decision_at)
+    applied_at = decision_at + timedelta(seconds=1)
+    valid = fill_order(
+        replay(events), "one", quote(at=applied_at), POLICY, applied_at, idempotency_key="fill"
+    )
+    delayed = quote(at=decision_at - timedelta(minutes=15))
+    forged = valid.model_copy(
+        update={
+            "payload": {
+                **valid.payload,
+                "quote_at": delayed.as_of.isoformat(),
+                "quote": delayed.model_dump(mode="json"),
+            }
+        }
+    )
+    # Keep both retained quote timestamps internally consistent: the ledger must
+    # reject economic chronology, not just a mismatch between duplicate fields.
+    with pytest.raises(PaperError) as error:
+        replay([*events, forged])
+    assert error.value.code == "invalid_fill_time"
+
+
 def test_missing_mark_is_not_zero_and_marked_pnl_reconciles():
     events = [opening()]
     reserve(events, order())

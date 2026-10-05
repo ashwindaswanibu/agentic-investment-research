@@ -34,10 +34,13 @@ import {
 } from "./ui";
 import { ResearchArtifactContent } from "./research-artifacts";
 import { StrategyAssessment } from "./strategy-assessment";
+import { OptionsChain } from "./options-chain";
 
 export const artifactIcons: Partial<Record<string, LucideIcon>> = {
   evidence: FileText,
   dataset: Database,
+  options_chain: Database,
+  options_expirations: Database,
   code: Code2,
   experiment: FlaskConical,
   strategy_assessment: ShieldCheck,
@@ -404,6 +407,8 @@ export function ReviewContent({ content }: { content: Json }) {
   );
 }
 export function ArtifactContent({ artifact }: { artifact: Artifact }) {
+  if (artifact.kind === "options_chain")
+    return <OptionsChain key={artifact.id} artifact={artifact} />;
   if (artifact.kind === "strategy_assessment")
     return <StrategyAssessment value={artifact.content} />;
   if (
@@ -498,7 +503,11 @@ export function ArtifactModal({
                 {artifact.task_id ||
                   (artifact.kind === "strategy_assessment"
                     ? "System assessment"
-                    : "Uploaded artifact")}
+                    : ["options_chain", "options_expirations"].includes(
+                          artifact.kind,
+                        )
+                      ? "Operator acquisition"
+                      : "Uploaded artifact")}
               </dd>
             </div>
           </dl>

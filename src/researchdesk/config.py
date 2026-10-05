@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     alpaca_api_key: SecretStr = SecretStr("")
     alpaca_secret_key: SecretStr = SecretStr("")
     alpaca_feed: Literal["iex", "sip"] = "iex"
+    tradier_sandbox_token: SecretStr = SecretStr("")
     operator_token: SecretStr = SecretStr("")
     read_only: bool = False
     claude_binary: str = "claude"

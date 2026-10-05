@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { artifactFixture, capsFixture, caseFixture } from "@/test/fixtures";
+import type { JsonObject } from "@/lib/contracts";
 import { CaseScreen } from "./case-screen";
 
 const controls = vi.hoisted(() => ({ canWrite: true }));
@@ -26,6 +27,7 @@ function setup({
   status = "draft",
   sourceStatus = 200,
   sourceKind = "evidence",
+  savedArtifacts = [] as JsonObject[],
 } = {}) {
   const data = {
     ...caseFixture,
@@ -34,6 +36,7 @@ function setup({
     tool_calls: [],
     events: [],
     artifacts: [
+      ...savedArtifacts,
       {
         ...artifactFixture,
         id: "dossier",
@@ -82,6 +85,89 @@ function setup({
 }
 
 describe("investigation interactions", () => {
+  it("counts options evidence consistently and opens operator acquisitions from the Evidence tab", async () => {
+    setup({
+      savedArtifacts: [
+        {
+          ...artifactFixture,
+          id: "options-chain",
+          kind: "options_chain",
+          title: "Synthetic options snapshot",
+          task_id: null,
+          metadata: { synthetic: true },
+          content: {
+            schema_version: "options_chain.v1",
+            provider: "tradier",
+            feed: "sandbox",
+            delay_seconds: 900,
+            execution_eligible: false,
+            underlying: "TEST",
+            expiration: "2026-10-16",
+            contracts: [],
+            issues: [],
+          },
+        },
+        {
+          ...artifactFixture,
+          id: "options-expirations",
+          kind: "options_expirations",
+          title: "Synthetic expiration discovery",
+          task_id: null,
+          content: { dates: ["2026-10-16"], synthetic: true },
+        },
+      ],
+    });
+    const evidenceTab = await screen.findByRole("tab", { name: /Evidence/ });
+    expect(evidenceTab).toHaveTextContent("Evidence2");
+    expect(
+      within(screen.getByRole("tabpanel")).getByRole("button", {
+        name: /Synthetic options snapshot/,
+      }),
+    ).toBeVisible();
+    fireEvent.click(evidenceTab);
+    const panel = screen.getByRole("tabpanel");
+    fireEvent.click(
+      within(panel).getByRole("button", { name: /Synthetic options snapshot/ }),
+    );
+    const chain = await screen.findByRole("dialog", {
+      name: "Synthetic options snapshot",
+    });
+    expect(
+      within(chain).getByRole("region", { name: "Options chain snapshot" }),
+    ).toBeVisible();
+    expect(within(chain).getByText("Operator acquisition")).toBeVisible();
+    expect(within(chain).getByText("Synthetic fixture")).toBeVisible();
+    fireEvent.click(
+      within(chain).getByRole("button", { name: "Close dialog" }),
+    );
+    fireEvent.click(
+      within(panel).getByRole("button", {
+        name: /Synthetic expiration discovery/,
+      }),
+    );
+    const expirations = await screen.findByRole("dialog", {
+      name: "Synthetic expiration discovery",
+    });
+    expect(within(expirations).getByText("Operator acquisition")).toBeVisible();
+    expect(within(expirations).getByText(/"2026-10-16"/)).toBeVisible();
+  });
+
+  it.each(["options_chain", "options_expirations"])(
+    "resolves linked %s source evidence from another case",
+    async (sourceKind) => {
+      setup({ sourceKind });
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Linked source 1" }),
+      );
+      expect(
+        await screen.findByRole("dialog", {
+          name: "Shared synthetic evidence",
+        }),
+      ).toBeVisible();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    },
+  );
+
   it("supports keyboard navigation across tabs with one tab stop", async () => {
     setup();
     const overview = await screen.findByRole("tab", { name: "Overview" });

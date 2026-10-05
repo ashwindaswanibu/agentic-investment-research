@@ -36,9 +36,11 @@ Every registered tool appears below. These are maximum role permissions; a speci
 flowchart LR
  role["coordinator"]
  role --> tool_acquire_market_data["acquire_market_data"]
+ role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_activate_specialist["activate_specialist"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
  role --> tool_delegate_task["delegate_task"]
+ role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
  role --> tool_fetch_evidence["fetch_evidence"]
  role --> tool_get_clinical_trial["get_clinical_trial"]
@@ -61,7 +63,9 @@ flowchart LR
 flowchart LR
  role["researcher"]
  role --> tool_acquire_market_data["acquire_market_data"]
+ role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
+ role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
  role --> tool_fetch_evidence["fetch_evidence"]
  role --> tool_get_clinical_trial["get_clinical_trial"]
@@ -83,8 +87,10 @@ flowchart LR
 flowchart LR
  role["coder"]
  role --> tool_acquire_market_data["acquire_market_data"]
+ role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
  role --> tool_define_research_tool["define_research_tool"]
+ role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
  role --> tool_execute_python["execute_python"]
  role --> tool_fetch_evidence["fetch_evidence"]
@@ -105,8 +111,10 @@ flowchart LR
 flowchart LR
  role["reviewer"]
  role --> tool_acquire_market_data["acquire_market_data"]
+ role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
  role --> tool_define_research_tool_tests["define_research_tool_tests"]
+ role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
  role --> tool_execute_python["execute_python"]
  role --> tool_fetch_evidence["fetch_evidence"]
@@ -124,11 +132,13 @@ flowchart LR
 | Tool | Effect | Description |
 |---|---|---|
 | `acquire_market_data` | artifact | Acquire daily market bars with source and corporate-action metadata; end date is exclusive. Returns a compact receipt; read_artifact inspects full content. |
+| `acquire_options_chain` | artifact | Retain one underlying/expiration chain from Tradier's 15-minute-delayed sandbox for a stated research purpose. Choose expiry from the research horizon, not automatically the nearest date. Optional source_artifact_ids link the case's hypothesis/evidence. Bid/ask market times and receipt time remain distinct; missing values and validation issues are explicit. Research evidence only: cannot authorize an order or backtest fill, and delayed prices cannot fill a newer decision. Returns a compact receipt; inspect contract rows using inspect_source at /contracts or read_artifact. A refresh is a new artifact. |
 | `activate_specialist` | artifact | Activate an exact specialist specification accepted by an independent reviewer task. Activation is research-only; review does not prove empirical quality. Use its artifact ID as delegate_task.specialist_id for a researcher task. Every version needs its own review. |
 | `compare_binary_rates` | read | Calculate clinical event-rate intervals and risk differences; never infers causal attribution. |
 | `define_research_tool` | artifact | Define a reusable analysis tool from a coder's immutable run(payload) artifact. Declare scalar inputs, purpose and limitations; qualification is still required. Returns a compact receipt; read_artifact inspects full content. |
 | `define_research_tool_tests` | artifact | Independently specify 2–8 distinct input/expected-JSON examples for exact tool/code hashes. These assert functionality, not scientific validity. Returns a compact receipt; read_artifact inspects full content. |
 | `delegate_task` | task | Delegate a bounded task to a specialist. The parent yields until its delegated tasks finish, then receives their results and artifact IDs. Optional specialist_id pins a reviewed activation for a researcher; ordinary input artifacts must belong to this case. Profile prose cannot grant tool permissions. |
+| `discover_options_expirations` | artifact | Discover available expirations for a US underlying through Tradier sandbox and retain the observation in this investigation. State the research purpose and optionally link hypothesis/evidence IDs from this case. Expiry availability is not proof of quote liquidity or suitability. Returns a compact saved-artifact receipt; inspect full dates with read_artifact or inspect_source. |
 | `evaluate_scenarios` | read | Compute explicit stock/options expiration payoffs and assumptions; outputs cannot authorize option execution. |
 | `execute_python` | artifact | Execute analysis code in an isolated container; this creates an analysis record, not an execution-eligible backtest. Returns a compact receipt; read_artifact inspects full content. |
 | `fetch_evidence` | artifact | Fetch an allowlisted HTTPS source and retain attributable, untrusted evidence. Returns a compact receipt; read_artifact inspects full content. |
@@ -259,5 +269,5 @@ SHA-256 values bind this map to its prompt/registry implementation. The drift te
 
 - `agents/runtime.py`: `1a5f0968521cbce1cf9d0b664dc9612034e61f0134bd1554936421ed8c4d61ff`
 - `agents/providers.py`: `d43ccf112f07ce0a8fc734026811eee91947695d5b21182183dc12f405462c9c`
-- `agents/specialists.py`: `aed2867df7019866054c4ca909edec4fa713a5f291d8840942d65828b750bf44`
-- `domain.py`: `5d9afb597398f24913590c18f039f0f446166ca14b2e7de300037710a9d74d8b`
+- `agents/specialists.py`: `c62ba4dfdac79fd77f18d00d3ba9765be94357414795236b32f52a8238aa87a4`
+- `domain.py`: `ae9e8cbf35c60b4c590aea197ee09d72f0933b766b30a6013850f2a6690bea62`

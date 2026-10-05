@@ -37,6 +37,8 @@ ROLES = {"coordinator", "researcher", "coder", "reviewer"}
 KINDS = {
     "evidence",
     "dataset",
+    "options_chain",
+    "options_expirations",
     "code",
     "experiment",
     "strategy_assessment",
@@ -540,6 +542,7 @@ class Store:
         metadata=None,
         idempotency_key=None,
         worker_id=None,
+        require_active_case=False,
     ):
         if kind not in KINDS or not title.strip() or len(title) > 200:
             raise DomainError("INVALID_ARTIFACT", "Unknown artifact type or invalid title.")
@@ -561,7 +564,9 @@ class Store:
                 existing = self._existing(s, ArtifactRow, idempotency_key, digest)
                 if existing:
                     return row_dict(existing)
-                self._case_lock(s, case_id)
+                case = self._case_lock(s, case_id)
+                if require_active_case and case.status == "cancelled":
+                    raise DomainError("CANCELLED", "This investigation has been cancelled.", 409)
                 if task_id:
                     self._check_lease(self._task_lock(s, task_id), worker_id)
                 if task_id and require(s, TaskRow, task_id).case_id != case_id:

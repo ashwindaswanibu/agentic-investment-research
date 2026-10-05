@@ -12,6 +12,8 @@ export type CaseStatus =
 export const ARTIFACT_KINDS = [
   "evidence",
   "dataset",
+  "options_chain",
+  "options_expirations",
   "code",
   "experiment",
   "strategy_assessment",
@@ -30,6 +32,12 @@ export const ARTIFACT_KINDS = [
   "research_tool_result",
 ] as const;
 export type ArtifactKind = (typeof ARTIFACT_KINDS)[number] | (string & {});
+export const EVIDENCE_ARTIFACT_KINDS: readonly ArtifactKind[] = [
+  "evidence",
+  "dataset",
+  "options_chain",
+  "options_expirations",
+];
 
 export interface Capabilities {
   execution_mode: "paper";

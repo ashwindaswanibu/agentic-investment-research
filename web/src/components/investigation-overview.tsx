@@ -12,6 +12,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import type { Artifact, CaseDetail, Json, JsonObject } from "@/lib/contracts";
+import { EVIDENCE_ARTIFACT_KINDS } from "@/lib/contracts";
 import { dateTime, isRecord, label } from "@/lib/format";
 import { Status } from "./ui";
 
@@ -54,7 +55,7 @@ export function investigationReading(data: CaseDetail) {
     }
   }
   const evidence = artifacts.filter((a) =>
-    ["evidence", "dataset"].includes(a.kind),
+    EVIDENCE_ARTIFACT_KINDS.includes(a.kind),
   );
   return {
     dossierArtifact,

@@ -111,6 +111,8 @@ def _validate_evidence(store, spec):
         if artifact["kind"] not in {
             "evidence",
             "dataset",
+            "options_chain",
+            "options_expirations",
             "experiment",
             "note",
             "clinical_dossier",

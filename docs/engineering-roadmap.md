@@ -140,6 +140,9 @@ signal-driven capability gap, domain/prompt specification, coder implementation,
 independent test design, constrained activation, reuse and failure-driven revision.
 Compare against the same workflow without that adaptation. Record total effort,
 including failed specialists, tool development and evaluator costs.
+The [queued prompt refinement and evaluation task](product-direction.md#queued-domain-specific-prompts-and-evaluation)
+defines the per-task domain methods, prompt versioning and comparison requirements.
+It is recorded for later implementation; it does not replace the active deliverable.
 
 **M3 — make forecasts and decisions accountable.** Build prospective resolution,
 calibration and selection history. Join evidence to scenarios, instrument choice,

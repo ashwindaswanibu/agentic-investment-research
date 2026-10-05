@@ -207,6 +207,30 @@ def _artifact_summary(artifact):
             "corporate_actions": len(content.get("corporate_actions", [])),
             "synthetic": content.get("synthetic"),
         }
+    if kind in {"options_chain", "options_expirations"}:
+        rows = content.get("contracts", [])
+        return {
+            key: value
+            for key, value in {
+                "underlying": content.get("underlying"),
+                "expiration": content.get("expiration"),
+                "date_count": len(content["dates"]) if "dates" in content else None,
+                "dates": content["dates"][:20] if "dates" in content else None,
+                "dates_truncated": len(content.get("dates", [])) > 20,
+                "contract_count": len(rows) if kind == "options_chain" else None,
+                "flagged_contract_count": sum(bool(row.get("issues")) for row in rows),
+                "research_purpose": _fit_json_text(content.get("research_purpose", ""), 1000),
+                "provider": content.get("provider"),
+                "feed": content.get("feed"),
+                "delay_seconds": content.get("delay_seconds"),
+                "received_at": content.get("received_at"),
+                "acquisition_started_at": content.get("acquisition_started_at"),
+                "execution_eligible": False,
+                "issues": content.get("issues", []),
+                "synthetic": content.get("synthetic", False),
+            }.items()
+            if value is not None
+        }
     if kind == "experiment":
         return {
             "status": content.get("status"),
@@ -318,7 +342,7 @@ class ResearchTools:
             "read_metadata": _read_hint(artifact["id"], section="metadata"),
         }
 
-    def save(self, ctx, kind, title, content, metadata=None):
+    def save(self, ctx, kind, title, content, metadata=None, *, require_active_case=False):
         ctx.check_cancelled()
         return self.store.put_artifact(
             ctx.case_id,
@@ -329,6 +353,7 @@ class ResearchTools:
             metadata,
             idempotency_key=ctx.idempotency_key,
             worker_id=ctx.worker_id,
+            require_active_case=require_active_case,
         )
 
     def write(self, ctx: ToolContext, args: ArtifactWrite):
@@ -814,9 +839,11 @@ class ResearchTools:
             registry.register(name, description, schema, roles, handler, side_effect=effect)
         from researchdesk.agents.specialists import register_specialists
         from researchdesk.generated_tools import register_generated_tools
+        from researchdesk.options_workflow import register_options_tools
         from researchdesk.quality_workflow import register_quality_tools
 
         register_quality_tools(registry, self)
         register_generated_tools(registry, self)
         register_specialists(registry, self)
+        register_options_tools(registry, self)
         return registry

@@ -239,6 +239,20 @@ def test_invalid_inputs_do_not_reserve_or_fill(setup, condition):
     assert len(store.ledger_events()) == 1
 
 
+def test_newly_received_batch_cannot_make_fifteen_minute_old_quotes_current(setup):
+    ops, store, market, case, saved = setup
+    oid = intent(store, case)
+    activate(ops, saved)
+    market.quote_at = T - timedelta(minutes=15)
+    # SyntheticMarket stamps receipt with Clock.value, independently of quote_at.
+    result = tick(ops)
+    assert {"action": "rejected", "order_id": oid, "code": "stale_quote"} in result["actions"]
+    state = replay(store.ledger_events())
+    assert state.event_count == 1
+    assert state.cash == Decimal("1000")
+    assert not state.orders and not state.positions
+
+
 def test_control_change_during_network_call_fences_old_worker(setup):
     ops, store, market, case, saved = setup
     intent(store, case)

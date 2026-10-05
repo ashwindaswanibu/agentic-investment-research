@@ -172,7 +172,11 @@ def inspect_source(research, ctx, args: InspectSourceInput) -> dict:
     isolated Stores. A failed lookup is an error, never evidence of clinical absence.
     """
     ctx.check_cancelled()
-    artifact = research.artifact(args.artifact_id, kind="evidence")
+    artifact = research.artifact(args.artifact_id)
+    if artifact["kind"] not in {"evidence", "options_chain", "options_expirations"}:
+        from researchdesk.errors import DomainError
+
+        raise DomainError("ARTIFACT_TYPE", "This operation requires retained source evidence.")
     try:
         node = _pointer(artifact["content"], args.source_path)
     except (KeyError, ValueError, IndexError, TypeError):
