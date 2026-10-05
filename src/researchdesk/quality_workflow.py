@@ -6,7 +6,12 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from researchdesk.errors import DomainError
-from researchdesk.research import ClinicalDossier, ExtractionReference, score_extraction
+from researchdesk.research import (
+    ClinicalDossier,
+    ClinicalDossierV2,
+    ExtractionReference,
+    score_extraction,
+)
 from researchdesk.research.quality import (
     MAX_SOURCE_CONTENT_BYTES,
     bounded_json_size,
@@ -35,7 +40,7 @@ class HypothesisInput(Input):
 
 class DossierInput(Input):
     title: str = Field(min_length=5, max_length=200)
-    dossier: ClinicalDossier
+    dossier: ClinicalDossierV2 | ClinicalDossier
     hypothesis_id: str | None = None
 
 
@@ -128,8 +133,10 @@ def register_quality_tools(registry, research):
         ),
         (
             "submit_clinical_dossier",
-            "Persist a structured clinical dossier with exact source quotations, trial design, "
-            "arms, endpoints, contrary evidence, missing inputs and forecast or abstention. "
+            "Persist a clinical-dossier.v2 with source-qualified analysis contexts, design, "
+            "population counts, endpoints, reconciliation and forecast or abstention. Preserve "
+            "different populations and analyses; do not flatten them to one trial-wide answer. "
+            "Legacy v1 remains readable. Use inspect_source for exact paths and citations. "
             "Runs structural and attribution checks, retaining failures. Inspect validation "
             "and seek independent review; a passing check does not establish claim truth. "
             "Admission limits: 200 KB dossier, 30 source artifacts, 8 MB combined source content.",

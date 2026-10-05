@@ -1,0 +1,2 @@
+# Isolated feasibility spike only; deliberately not an application dependency.
+inspect-ai==0.3.276

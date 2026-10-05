@@ -660,8 +660,21 @@ class ResearchTools:
         )
 
     def registry(self):
+        from researchdesk.source_navigation import InspectSourceInput, inspect_source
+
         registry = ToolRegistry()
         specs = [
+            (
+                "inspect_source",
+                "Navigate retained evidence by exact JSON pointer with bounded child/text pages. "
+                "Returns full-content hashes and exact scalar/text citations, preserving raw "
+                "types. Follow cursors for complete coverage; missing paths do not establish "
+                "absence of clinical evidence.",
+                InspectSourceInput,
+                ALL_ROLES,
+                partial(inspect_source, self),
+                "read",
+            ),
             (
                 "read_artifact",
                 "Read an immutable artifact as paginated text (default 12000, maximum 16000 "

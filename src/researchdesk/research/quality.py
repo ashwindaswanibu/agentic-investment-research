@@ -27,24 +27,41 @@ from .models import (
     FieldError,
     QualityCheck,
 )
+from .observation_models import ClinicalDossierV2
 
-CLINICAL_DOSSIER_GUIDANCE = """Build a clinical evidence dossier, not a stock recommendation.
-Identify the intervention, indication, population and registry trial IDs. Extract
-design, arms, endpoint definitions, timeframes and prespecification status without
-equating trial completion with public readout. Use 'unknown' and record missing
-inputs instead of guessing. Separate source-reported facts from your inferences.
-Every claim needs an exact excerpt from a retained evidence artifact, the artifact's
-ID and full-content SHA-256; nested-source hashes are not artifact hashes. Link each
-numeric, boolean or null citation to its exact JSON pointer and quote the complete
-canonical JSON value (for example 405, false or null), without quotation marks.
-Text excerpts remain case-sensitive, whitespace-normalized quotations. Link each
-trial, arm and endpoint to the supporting claim IDs. For inferences, explain the
-reasoning gap; citation presence does not establish the inference. Record contrary
-evidence, the search/coverage limitations, unresolved inputs and uncertainty.
-Define a falsifiable target, as-of date, later horizon, outcome rule and resolution
-source. Abstain explicitly when a forecast is unsupported; do not invent a
-probability. Do not infer efficacy, commercial value or investment returns merely
-from registry entries, publication metadata or a successfully validated dossier.
+CLINICAL_DOSSIER_GUIDANCE = """Build a clinical-dossier.v2 evidence dossier.
+Use inspect_source to navigate retained evidence by exact JSON pointer. Follow its
+pagination; it returns raw values and source citations, not clinical interpretations.
+Retain source/analysis contexts instead of merging all records into one trial-wide
+answer. Distinguish original randomized assignment from a later external-control
+analysis. Preserve enrolled, dosed, safety and endpoint populations separately.
+Local group IDs are meaningful only within their exact owning source container;
+for registry outcomes this is the individual outcome record, not the whole module.
+Connect endpoint counts reciprocally to their endpoint. Do not sum populations
+unless the source explicitly supports that operation.
+Every present observation needs exact retained-source citations. Count citations
+must identify the exact value: declare no normalization for integer/null values,
+integer_from_digit_string for canonical count strings, or reported_in_text for
+text extraction requiring independent review. Preserve source null separately from
+false availability: a present availability flag needs its exact boolean/null
+available_source_ref. Prose-based interpretations remain claims or unresolved.
+Distinguish unresolved, not_applicable, and source_absent. source_absent requires an existing
+parent object and the exact absent key; it does not mean evidence is absent from
+the literature. A missing/invalid pointer is not proof of absence.
+Citations require the artifact ID and full-content SHA-256, not a nested-source
+hash. Quote complete canonical JSON scalars (405, false, null); text quotations
+remain case-sensitive and whitespace-normalized. Use separate protocol/SAP
+citations for prespecification; a current primary endpoint label is insufficient.
+Reconcile differences with explicit retained observation IDs. Separate source-
+reported explanations from your inferences, and state the inference basis.
+Record contrary evidence, missing inputs, search limits and uncertainty. Passing
+structural/citation checks does not prove clinical truth, semantic support,
+efficacy, completeness or predictive skill.
+For extraction-only work set forecast to null. If a forecast is requested, define
+a falsifiable target, real as-of date, later horizon, outcome rule and resolution
+source. Abstain explicitly when unsupported; never invent dates or probability.
+Legacy clinical-dossier.v1 outputs remain readable but cannot express these source
+and analysis distinctions.
 """
 
 LIMITATIONS = [
@@ -77,7 +94,11 @@ def bounded_json_size(content: Any, limit: int) -> int:
     return size
 
 
-def check_dossier_budget(dossier: ClinicalDossier) -> set[str]:
+def check_dossier_budget(dossier: ClinicalDossier | ClinicalDossierV2) -> set[str]:
+    if dossier.schema_version == "clinical-dossier.v2":
+        from .observation_quality import check_observation_budget
+
+        return check_observation_budget(dossier)
     bounded_json_size(dossier.model_dump(mode="json"), MAX_DOSSIER_BYTES)
     identifiers = {ref.artifact_id for claim in dossier.claims for ref in claim.source_refs}
     if len(identifiers) > MAX_DOSSIER_SOURCES:
@@ -166,14 +187,162 @@ def _schema_checks(error: ValidationError, prefix: str = "") -> list[QualityChec
     ]
 
 
+class CitationValidator:
+    """Shared source-presence checks for bounded dossier validators.
+
+    Callers enforce their dossier/source byte and count admission limits first.
+    A fresh instance belongs to one validation; caches never cross source sets.
+    Presence and identity do not establish that a claim follows from the source.
+    """
+
+    def __init__(self, artifacts: Mapping[str, dict], invalid_sources=()):
+        self.artifacts = artifacts
+        self.invalid_sources = frozenset(invalid_sources)
+        self.hashes: dict[str, str | None] = {}
+        self.normalized: dict[tuple[str, str | None], tuple[str | None, tuple[str, ...]]] = {}
+
+    def identity(self, source, path: str) -> list[QualityCheck]:
+        checks: list[QualityCheck] = []
+
+        def check(code, path, passed, message):
+            checks.append(QualityCheck(code=code, path=path, passed=passed, message=message))
+            return passed
+
+        artifact = self.artifacts.get(source.artifact_id)
+        if not check(
+            "source_exists",
+            path,
+            isinstance(artifact, Mapping),
+            "The referenced evidence artifact must be supplied.",
+        ):
+            return checks
+        check(
+            "source_identity",
+            path,
+            artifact.get("id") == source.artifact_id,
+            "The artifact's stored identity must match the reference.",
+        )
+        check(
+            "source_kind",
+            path,
+            artifact.get("kind") == "evidence",
+            "A dossier source must be an evidence artifact.",
+        )
+        if source.artifact_id not in self.hashes:
+            try:
+                self.hashes[source.artifact_id] = (
+                    None
+                    if source.artifact_id in self.invalid_sources
+                    else _hash(artifact["content"])
+                )
+            except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
+                self.hashes[source.artifact_id] = None
+        actual_hash = self.hashes[source.artifact_id]
+        check(
+            "source_content_integrity",
+            path,
+            actual_hash is not None and artifact.get("sha256") == actual_hash,
+            "The stored hash must match the complete canonical artifact content.",
+        )
+        check(
+            "source_version_match",
+            path,
+            actual_hash is not None and source.artifact_sha256 == actual_hash,
+            "The citation hash must identify this exact complete artifact content.",
+        )
+        return checks
+
+    def anchor(self, source, path: str) -> list[QualityCheck]:
+        """Verify an exact source location; containers are valid context anchors.
+
+        An anchor identifies retained data only. It does not certify a group
+        mapping, an analysis interpretation or an assertion of missing evidence.
+        """
+        checks = self.identity(source, path)
+        resolved = False
+        if all(check.passed for check in checks):
+            try:
+                _pointer(self.artifacts[source.artifact_id]["content"], source.source_path)
+                resolved = True
+            except (KeyError, ValueError, IndexError, TypeError, AttributeError):
+                pass
+        checks.append(
+            QualityCheck(
+                code="source_anchor_exists",
+                path=path + "/source_path",
+                passed=resolved,
+                message="The exact source version must contain the anchored JSON location.",
+            )
+        )
+        return checks
+
+    def validate(self, source, path: str) -> list[QualityCheck]:
+        checks = self.identity(source, path)
+        if not checks[0].passed:
+            return checks
+
+        def check(code, path, passed, message):
+            checks.append(QualityCheck(code=code, path=path, passed=passed, message=message))
+            return passed
+
+        artifact = self.artifacts[source.artifact_id]
+        actual_hash = self.hashes.get(source.artifact_id)
+        # Invalid/non-JSON content cannot be searched as trusted retained text.
+        content = artifact.get("content") if actual_hash is not None else None
+        cache_key = (source.artifact_id, source.source_path)
+        if cache_key not in self.normalized:
+            if source.source_path is not None:
+                selection_kind, excerpts = None, ()
+                try:
+                    if actual_hash is None:
+                        raise ValueError("The source content is not valid JSON.")
+                    selected = _pointer(content, source.source_path)
+                    if isinstance(selected, str):
+                        selection_kind, excerpts = "text", (_normalize(selected),)
+                    else:
+                        excerpts = (_scalar_excerpt(selected),)
+                        selection_kind = "scalar"
+                except (KeyError, ValueError, IndexError, TypeError, OverflowError):
+                    pass
+            else:
+                selection_kind = "search"
+                excerpts = tuple(_normalize(text) for text in _strings(content))
+            self.normalized[cache_key] = (selection_kind, excerpts)
+        selection_kind, strings = self.normalized[cache_key]
+        if source.source_path is not None:
+            check(
+                "source_path_is_scalar",
+                path + "/source_path",
+                selection_kind in ("text", "scalar"),
+                "The JSON pointer must resolve to a string, finite number, boolean or null; "
+                "missing values, objects and arrays do not qualify.",
+            )
+        excerpt = _normalize(source.excerpt)
+        present = (
+            excerpt in strings
+            if selection_kind == "scalar"
+            else any(excerpt in text for text in strings)
+        )
+        check(
+            "quote_present",
+            path + "/excerpt",
+            bool(excerpt) and present,
+            "The whitespace-normalized, case-sensitive excerpt must occur within "
+            "one source string, or exactly equal the complete canonical JSON value of "
+            "a pointer-selected finite number, boolean or null. Serialized containers "
+            "and joined fields do not count.",
+        )
+        return checks
+
+
 def validate_dossier(
-    dossier: ClinicalDossier | dict, artifacts_by_id: Mapping[str, dict]
+    dossier: ClinicalDossier | ClinicalDossierV2 | dict, artifacts_by_id: Mapping[str, dict]
 ) -> DossierValidationReport:
     """Validate a dossier without altering it or the supplied retained artifacts."""
+    from . import parse_dossier
+
     try:
-        parsed = ClinicalDossier.model_validate(
-            dossier.model_dump() if isinstance(dossier, ClinicalDossier) else dossier
-        )
+        parsed = parse_dossier(dossier)
     except ValidationError as error:
         return DossierValidationReport(
             valid=False,
@@ -181,6 +350,10 @@ def validate_dossier(
             coverage=DossierCoverage(),
             limitations=LIMITATIONS,
         )
+    if isinstance(parsed, ClinicalDossierV2):
+        from .observation_quality import validate_observation_dossier
+
+        return validate_observation_dossier(parsed, artifacts_by_id)
     try:
         identifiers = check_dossier_budget(parsed)
     except (ValueError, TypeError, OverflowError, RecursionError):
@@ -206,8 +379,7 @@ def validate_dossier(
             invalid_sources.add(identifier)
         except (TypeError, KeyError, OverflowError, RecursionError):
             invalid_sources.add(identifier)
-    source_hashes: dict[str, str | None] = {}
-    normalized_sources: dict[tuple[str, str | None], tuple[str | None, tuple[str, ...]]] = {}
+    citations = CitationValidator(artifacts_by_id, invalid_sources)
     checks: list[QualityCheck] = []
 
     def check(code: str, path: str, passed: bool, message: str) -> bool:
@@ -295,94 +467,7 @@ def validate_dossier(
         for si, source in enumerate(claim.source_refs):
             path = f"{claim_path}/source_refs/{si}"
             start = len(checks)
-            artifact = artifacts_by_id.get(source.artifact_id)
-            if not check(
-                "source_exists",
-                path,
-                isinstance(artifact, Mapping),
-                "The referenced evidence artifact must be supplied.",
-            ):
-                claim_verified = False
-                continue
-            check(
-                "source_identity",
-                path,
-                artifact.get("id") == source.artifact_id,
-                "The artifact's stored identity must match the reference.",
-            )
-            check(
-                "source_kind",
-                path,
-                artifact.get("kind") == "evidence",
-                "A dossier source must be an evidence artifact.",
-            )
-            if source.artifact_id not in source_hashes:
-                try:
-                    source_hashes[source.artifact_id] = (
-                        None
-                        if source.artifact_id in invalid_sources
-                        else _hash(artifact["content"])
-                    )
-                except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
-                    source_hashes[source.artifact_id] = None
-            actual_hash = source_hashes[source.artifact_id]
-            check(
-                "source_content_integrity",
-                path,
-                actual_hash is not None and artifact.get("sha256") == actual_hash,
-                "The stored hash must match the complete canonical artifact content.",
-            )
-            check(
-                "source_version_match",
-                path,
-                actual_hash is not None and source.artifact_sha256 == actual_hash,
-                "The citation hash must identify this exact complete artifact content.",
-            )
-            # Invalid/non-JSON content cannot be searched as trusted retained text.
-            content = artifact.get("content") if actual_hash is not None else None
-            cache_key = (source.artifact_id, source.source_path)
-            if cache_key not in normalized_sources:
-                if source.source_path is not None:
-                    selection_kind, excerpts = None, ()
-                    try:
-                        if actual_hash is None:
-                            raise ValueError("The source content is not valid JSON.")
-                        selected = _pointer(content, source.source_path)
-                        if isinstance(selected, str):
-                            selection_kind, excerpts = "text", (_normalize(selected),)
-                        else:
-                            excerpts = (_scalar_excerpt(selected),)
-                            selection_kind = "scalar"
-                    except (KeyError, ValueError, IndexError, TypeError, OverflowError):
-                        pass
-                else:
-                    selection_kind = "search"
-                    excerpts = tuple(_normalize(text) for text in _strings(content))
-                normalized_sources[cache_key] = (selection_kind, excerpts)
-            selection_kind, strings = normalized_sources[cache_key]
-            if source.source_path is not None:
-                check(
-                    "source_path_is_scalar",
-                    path + "/source_path",
-                    selection_kind in ("text", "scalar"),
-                    "The JSON pointer must resolve to a string, finite number, boolean or null; "
-                    "missing values, objects and arrays do not qualify.",
-                )
-            excerpt = _normalize(source.excerpt)
-            present = (
-                excerpt in strings
-                if selection_kind == "scalar"
-                else any(excerpt in text for text in strings)
-            )
-            check(
-                "quote_present",
-                path + "/excerpt",
-                bool(excerpt) and present,
-                "The whitespace-normalized, case-sensitive excerpt must occur within "
-                "one source string, or exactly equal the complete canonical JSON value of "
-                "a pointer-selected finite number, boolean or null. Serialized containers "
-                "and joined fields do not count.",
-            )
+            checks.extend(citations.validate(source, path))
             reference_verified = all(item.passed for item in checks[start:])
             verified_references += int(reference_verified)
             claim_verified &= reference_verified

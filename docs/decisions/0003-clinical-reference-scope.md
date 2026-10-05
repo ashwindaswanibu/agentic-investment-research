@@ -1,7 +1,7 @@
 # ADR 0003: Define source-qualified clinical references before scoring
 
-- Status: decision/design record; the proposed reference contract and scoring changes
-  below are **not implemented**.
+- Status: source-qualified v2 **candidate outputs are implemented**; the scoped
+  reference contract and scoring changes below are **not implemented**.
 - Recorded: 2026-10-05. Primary source snapshots acquired and read on 2026-10-05.
 - Scope: the three-family [clinical development corpus](../research-benchmark-data.md)
   and the next M1 evaluation gate.
@@ -20,7 +20,11 @@ cannot establish extraction accuracy, research superiority, efficacy or trading 
 The immediate proposed scoring scope is agreement with explicitly selected fields
 in an exact registry snapshot. Reconciliation of registrations, publications,
 populations and analyses requires a source-qualified contract and independent review.
-The current extraction scorer does not implement that contract.
+The current extraction scorer does not implement that contract. The
+[implemented v2 output design](../research/clinical-observation-design.md)
+preserves these distinctions through source contexts, observations, scoped
+missingness and explicit reconciliation; it remains separate from reference
+adjudication and scoring. The legacy scorer rejects v2 rather than flattening it.
 
 Scalar attribution is already implemented, separately from this proposal:
 [`SourceReference`](../../src/researchdesk/research/models.py#L19),

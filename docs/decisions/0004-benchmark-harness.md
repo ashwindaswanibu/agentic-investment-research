@@ -1,7 +1,7 @@
 # ADR 0004: Keep a thin runtime adapter; qualify Inspect before expanding the harness
 
-- Status: retain the implemented local diagnostic pilot; framework integration is
-  proposed and has not been installed or executed.
+- Status: retain the implemented local diagnostic pilot. A pinned serial Inspect
+  feasibility spike has now run; production adoption remains gated below.
 - Review date: 2026-10-05. Primary documentation and source only.
 - Reviewed versions: Inspect's official changelog lists **0.3.276**, dated
   2026-10-02; LangSmith Python SDK **0.12.2** was checked against its release and
@@ -23,9 +23,12 @@ scheduling, standard logs, inspection and scorer execution, subject to the parit
 gate below. LangSmith is a viable optional experiment-analysis service, but does
 not remove the need for our runtime, isolation or request-accounting adapter.
 
-This decision does not establish framework superiority from measurements. No
-framework integration, throughput comparison or real-corpus quality comparison
-was run for this review. The present blocker to quality claims is the
+This decision does not establish framework superiority from measurements. The
+[subsequent spike](inspect-adapter-spike.md) exercised the real runtime with
+synthetic providers and retained failures. It found that top-level Inspect success
+and empty Inspect usage do not describe our adapter's sample failures/request
+counts; reconciliation with the journal is necessary. No throughput or real-corpus
+quality comparison has run. The present blocker to quality claims is the
 [source-qualified reference contract](0003-clinical-reference-scope.md), not the
 choice of scheduler.
 

@@ -12,12 +12,31 @@ to the preceding immutable record. The original attempt remains in the library.
 The record's creation time establishes when it was registered; a self-reported
 information cutoff does not prove that the author had not seen later outcomes.
 
-`submit_clinical_dossier` records study design, arms, endpoint definitions and
-timeframes, reported facts, inferences, contrary evidence, missing inputs and an
-explicit forecast or abstention. Every claim names a retained source artifact,
-its full content hash and an excerpt. The validator checks reference integrity,
-quotation presence, internal links and structural consistency. Failed checks are
-retained so the next revision can address them.
+`submit_clinical_dossier` accepts the source-qualified `clinical-dossier.v2`
+contract and retains compatibility with v1. V2 records source/analysis contexts,
+design, population counts, endpoint definitions, availability and explicit
+reconciliation. Original trial assignment and a later analysis stay separate;
+enrolled, dosed, safety and endpoint populations do not become one denominator.
+Local group IDs are bound to their exact owning source container. Each endpoint
+and its counts must link reciprocally. Extraction-only dossiers use an explicit
+null forecast; requested forecasts require real dates and a falsifiable target
+or explicit abstention.
+
+`inspect_source` navigates retained evidence by JSON pointer, with bounded child
+and text pages. It returns exact hashes, raw scalar types and ready-to-use source
+citations. A failed lookup is an error, not proof of absence. V2 distinguishes
+present values (including permitted null), unresolved interpretation, not
+applicable, and a literally absent key under an existing source object. Missing
+keys do not establish that evidence is absent from a study or the literature.
+
+Every claim names a retained artifact, full-content hash and excerpt. Count
+bindings distinguish exact integer/null, explicit normalization from canonical
+digit strings, and extraction from prose. Availability flags preserve exact raw
+boolean/null values. Prose interpretation, normalized design labels and clinical
+meaning still require semantic review. The validator checks reference integrity,
+quotation/scalar presence, context boundaries and structural links; failed checks
+remain in immutable artifacts. The [design review](research/clinical-observation-design.md)
+records primary-source semantics and the cases that motivated these distinctions.
 
 Dossier admission is bounded to 200 KB, 30 distinct source artifacts and 8 MB of
 combined source content. Repeated citations reuse integrity and text checks; an
@@ -31,12 +50,15 @@ paper orders.
 
 ## Compare extraction quality against a baseline
 
-The operator can compare two frozen dossiers against an independently prepared
+The **legacy v1** operator path can compare two frozen dossiers against an independently prepared
 `ExtractionReference`. The reference declares a complete comparison scope and
 uses stable trial, arm and endpoint IDs. The deterministic scorer measures
 field-level precision, recall and F1, retaining missing, unexpected and incorrect
 values and distinguishing critical errors. This is a factual extraction test;
 it does not grade investment reasoning, forecast calibration or clinical efficacy.
+It rejects v2 instead of silently flattening source-qualified observations. The
+v2 assessment scope, evidence ledger and independently checked references remain
+unfinished; no real clinical quality score is reported.
 
 ```sh
 researchdesk evaluate-extraction \

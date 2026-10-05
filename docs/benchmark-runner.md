@@ -138,6 +138,14 @@ failures remain part of the outcome. Completion still does not imply correct
 claims: structural/attribution diagnostics are reported separately. All failed,
 blocked, running and planned attempts remain in the report's denominator.
 
+All three arms now receive the same `inspect_source` capability for bounded
+navigation of their isolated evidence store. New task guidance requests
+`clinical-dossier.v2`; final selection accepts v1 or v2 without flattening either.
+V2 preserves source/analysis/population distinctions and checks structure and
+attribution. It has no clinical reference scorer yet. These code/tool/guidance
+changes alter the package binding and therefore require a newly frozen bundle;
+old completed attempt receipts are not reinterpreted under the new contract.
+
 Raw provider usage is retained. Missing or incomplete token counters are explicitly
 counted, and dollar cost remains null without a billing calculation. Clinical
 quality scores remain null. No source-reconciliation, calibration, investment

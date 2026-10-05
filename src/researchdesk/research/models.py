@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, computed_field
 
 Text = Annotated[str, Field(min_length=1, max_length=12000)]
 Identifier = Annotated[str, Field(min_length=1, max_length=200)]
@@ -20,7 +20,7 @@ class SourceReference(Contract):
     artifact_id: Identifier
     artifact_sha256: Sha256
     excerpt: Text
-    source_path: str | None = Field(
+    source_path: Annotated[str, StringConstraints(strip_whitespace=False)] | None = Field(
         default=None,
         max_length=1000,
         description=(
@@ -113,6 +113,10 @@ class QualityCheck(Contract):
 
 class DossierCoverage(Contract):
     trials: int = 0
+    contexts: int = 0
+    observations: int = 0
+    reconciliations: int = 0
+    fully_attributed_observations: int = 0
     claims: int = 0
     facts: int = 0
     inferences: int = 0

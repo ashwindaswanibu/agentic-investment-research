@@ -51,9 +51,11 @@ flowchart LR
   allowlisted HTTPS sources retain provenance. BM25 or local dense retrieval
   returns attributable passages; immutable content keys the embedding cache.
 - **Research accountability.** Falsifiable hypotheses retain revisions and
-  rejections. Clinical dossiers link claims to exact source excerpts and record
-  contrary evidence, missing inputs and abstentions. An operator can compare
-  frozen candidate and baseline extractions against labels hidden from agents.
+  rejections. Clinical dossiers preserve source-specific populations, analyses
+  and disagreements, with exact citations and explicit missingness. Bounded source
+  navigation keeps raw values and local group identities intact. Legacy extraction
+  comparisons use labels hidden from agents; the new source-qualified output
+  contract still needs independently checked references before clinical scoring.
 - **An inspectable product.** React/Next.js views expose investigations, delegated
   work, tool inputs/results, code, equity curves, comparisons, review findings,
   library search, and paper accounting. Failures and missing valuations remain visible.

@@ -105,3 +105,55 @@ the next required work. No real provider-driven benchmark, independently
 adjudicated quality gain, authenticated market operation or public deployment
 was completed by this milestone. The new local runner is SQLite/single-process;
 it does not claim a distributed or PostgreSQL benchmark execution path.
+
+## M1 source-qualified output and inspection, 2026-10-05
+
+The [v2 output design](research/clinical-observation-design.md) now preserves
+source/analysis contexts, population counts, endpoint links and reconciliation.
+It retains explicit unresolved, not-applicable, null and scoped missing-key states.
+Production submission and all three benchmark arms use bounded source navigation;
+legacy dossiers remain readable and the legacy scorer rejects v2.
+
+- **761 Python tests passed** with external integration/sandbox/live checks excluded.
+  **Four real-source integration tests** passed separately against the pinned local
+  acquisition package. Those tests explicitly skip without the package rather
+  than substituting invented sources. Ruff lint/format and diff whitespace passed.
+- Independent adversarial review produced 94 validator cases and found four gaps:
+  asymmetric endpoint links, overly broad group contexts, false absence receiving
+  attribution credit, and null/zero masquerading as false availability. Fixes bind
+  reciprocal links, exact owning containers and exact count/boolean source values.
+  Global budgets include anchors and absence proofs. JSON-pointer whitespace is
+  preserved rather than silently normalized.
+- The [direct-tool script](../examples/clinical_observation_verification.py)
+  imported all six exact source blobs into an isolated database. Real registered
+  tools retained Vertex's distinct enrolled/dosed/safety/endpoint populations and
+  outcome-local group IDs. DCVax retained original randomized assignment and the
+  external comparison from the same publication as separate contexts, alongside
+  unresolved prespecification and scoped registry-key absence.
+- Final local evidence is under
+  `artifacts/clinical-observation-verification-20261005T152400Z-ce1006/`:
+  `verification-report.json`, `verification.db` and the two readable dossier
+  artifact exports. A different reviewer replayed the script in a separate store
+  and checked the selected interpretations against the retained source bytes.
+  The 21 observations are **operator-authored verification**, not model output or
+  gold labels. The missing-key-only observation is not counted as a quoted,
+  fully-attributed observation; its absence proof is checked separately.
+- **61 frontend tests**, TypeScript and the production build passed. Browser
+  inspection of the actual API-backed reports checked source contexts, distinct
+  populations, citation expansion, long paths, exact source versions, scoped
+  absence, reconciliation and null forecasts. No console errors were observed.
+  Temporary read-only QA services were stopped; the main local app was refreshed
+  without importing the verification cases into its account.
+- The [Inspect adapter spike](decisions/inspect-adapter-spike.md) executed six
+  synthetic attempts through the real runtime, retained one deliberate failure,
+  and reused terminal receipts without additional provider requests. All nine
+  retained evidence files matched their checksums. This qualifies a serial
+  feasibility path only; delegated execution, transcript/budget parity, interrupted
+  processes and real-provider operation remain required before adoption.
+
+The next M1 gate is a narrowly scoped, independently checked reference/evaluation
+contract. Matching source text and preserving its structure do not establish
+semantic entailment, clinical correctness, completeness or predictive quality.
+Real provider-driven comparison, authenticated market operation, options lifecycle
+qualification and public repository publication remain open. Resume claims have
+not been expanded to imply those outcomes.

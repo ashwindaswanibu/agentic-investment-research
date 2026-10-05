@@ -3,6 +3,10 @@ import type { ReactNode } from "react";
 import type { Json, JsonObject } from "@/lib/contracts";
 import { isRecord, label, scalar } from "@/lib/format";
 import { JsonDetails, Status, StructuredValues } from "./ui";
+import {
+  ClinicalObservationLedger,
+  EvidenceReferences as References,
+} from "./clinical-observations";
 
 const records = (value: Json | undefined): JsonObject[] =>
   Array.isArray(value) ? value.filter(isRecord) : [];
@@ -49,34 +53,6 @@ function Fields({ value, names }: { value: JsonObject; names: string[] }) {
     />
   );
 }
-function References({ value }: { value: Json | undefined }) {
-  return (
-    <div className="claim-sources">
-      {records(value).map((source, i) => (
-        <div className="claim-source" key={i}>
-          {typeof source.excerpt === "string" && (
-            <blockquote>{source.excerpt}</blockquote>
-          )}
-          <dl>
-            <div>
-              <dt>Source artifact</dt>
-              <dd className="mono break-all">{text(source.artifact_id)}</dd>
-            </div>
-            <div>
-              <dt>Exact version</dt>
-              <dd className="mono break-all">
-                {text(source.artifact_sha256 ?? source.sha256)}
-              </dd>
-            </div>
-          </dl>
-          {typeof source.source_path === "string" && (
-            <code className="break-all">{source.source_path}</code>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export function ClinicalDossierContent({ content }: { content: JsonObject }) {
   const dossier = isRecord(content.dossier) ? content.dossier : null;
@@ -90,6 +66,10 @@ export function ClinicalDossierContent({ content }: { content: JsonObject }) {
       </>
     );
   const validation = isRecord(content.validation) ? content.validation : {};
+  const checkName =
+    dossier.schema_version === "clinical-dossier.v2"
+      ? "Structure and attribution checks"
+      : "Attribution checks";
   const coverage = isRecord(validation.coverage) ? validation.coverage : {};
   const forecast = isRecord(dossier.forecast) ? dossier.forecast : {};
   const failures = records(validation.failed_checks ?? validation.issues);
@@ -98,14 +78,15 @@ export function ClinicalDossierContent({ content }: { content: JsonObject }) {
       <ScopeNote>
         <strong>
           {validation.valid === true
-            ? "Attribution checks passed"
+            ? `${checkName} passed`
             : validation.valid === false
-              ? "Attribution checks need attention"
-              : "Attribution checks not recorded"}
+              ? `${checkName} need attention`
+              : `${checkName} not recorded`}
         </strong>
         <p>
           These checks cover structure, source versions and quotation presence.
-          Clinical truth, inference quality and predictive skill require
+          Source-qualified records also retain context and scoped absence
+          checks. Clinical truth, inference quality and predictive skill require
           independent assessment.
         </p>
         {Object.keys(coverage).length > 0 && (
@@ -114,6 +95,8 @@ export function ClinicalDossierContent({ content }: { content: JsonObject }) {
             names={[
               "trials",
               "claims",
+              "contexts",
+              "observations",
               "verified_source_references",
               "distinct_sources",
             ]}
@@ -143,66 +126,70 @@ export function ClinicalDossierContent({ content }: { content: JsonObject }) {
         value={dossier}
         names={["intervention", "indication", "population"]}
       />
-      <Section title="Trial evidence">
-        {records(dossier.trials).map((trial, i) => (
-          <div className="trial-record" key={i}>
-            <h4>{text(trial.trial_id, "Trial identifier unavailable")}</h4>
-            {isRecord(trial.design) && (
-              <StructuredValues value={trial.design} />
-            )}
-            {records(trial.arms).length > 0 && (
-              <div className="table-scroll">
-                <table>
-                  <caption>Study arms</caption>
-                  <thead>
-                    <tr>
-                      <th>Arm</th>
-                      <th>Intervention</th>
-                      <th>Role</th>
-                      <th>Planned n</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records(trial.arms).map((arm, j) => (
-                      <tr key={j}>
-                        <td>{text(arm.label ?? arm.arm_id)}</td>
-                        <td>{text(arm.intervention)}</td>
-                        <td>{text(arm.role)}</td>
-                        <td>{number(arm.planned_n) ?? "Not reported"}</td>
+      {dossier.schema_version === "clinical-dossier.v2" ? (
+        <ClinicalObservationLedger dossier={dossier} />
+      ) : (
+        <Section title="Trial evidence">
+          {records(dossier.trials).map((trial, i) => (
+            <div className="trial-record" key={i}>
+              <h4>{text(trial.trial_id, "Trial identifier unavailable")}</h4>
+              {isRecord(trial.design) && (
+                <StructuredValues value={trial.design} />
+              )}
+              {records(trial.arms).length > 0 && (
+                <div className="table-scroll">
+                  <table>
+                    <caption>Study arms</caption>
+                    <thead>
+                      <tr>
+                        <th>Arm</th>
+                        <th>Intervention</th>
+                        <th>Role</th>
+                        <th>Planned n</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {records(trial.endpoints).length > 0 && (
-              <div className="table-scroll">
-                <table>
-                  <caption>Endpoints</caption>
-                  <thead>
-                    <tr>
-                      <th>Outcome</th>
-                      <th>Type</th>
-                      <th>Timeframe</th>
-                      <th>Prespecified</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records(trial.endpoints).map((endpoint, j) => (
-                      <tr key={j}>
-                        <td>{text(endpoint.name)}</td>
-                        <td>{text(endpoint.kind)}</td>
-                        <td>{text(endpoint.timeframe)}</td>
-                        <td>{text(endpoint.prespecified)}</td>
+                    </thead>
+                    <tbody>
+                      {records(trial.arms).map((arm, j) => (
+                        <tr key={j}>
+                          <td>{text(arm.label ?? arm.arm_id)}</td>
+                          <td>{text(arm.intervention)}</td>
+                          <td>{text(arm.role)}</td>
+                          <td>{number(arm.planned_n) ?? "Not reported"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {records(trial.endpoints).length > 0 && (
+                <div className="table-scroll">
+                  <table>
+                    <caption>Endpoints</caption>
+                    <thead>
+                      <tr>
+                        <th>Outcome</th>
+                        <th>Type</th>
+                        <th>Timeframe</th>
+                        <th>Prespecified</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ))}
-      </Section>
+                    </thead>
+                    <tbody>
+                      {records(trial.endpoints).map((endpoint, j) => (
+                        <tr key={j}>
+                          <td>{text(endpoint.name)}</td>
+                          <td>{text(endpoint.kind)}</td>
+                          <td>{text(endpoint.timeframe)}</td>
+                          <td>{text(endpoint.prespecified)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ))}
+        </Section>
+      )}
       <Section title="Claims and cited evidence">
         {records(dossier.claims).map((claim, i) => (
           <details className="claim-record" key={i}>
@@ -256,7 +243,10 @@ export function ClinicalDossierContent({ content }: { content: JsonObject }) {
       </Section>
       <Section title="Falsifiable forecast">
         <div className="forecast-record">
-          {forecast.status === "abstain" ? (
+          {dossier.schema_version === "clinical-dossier.v2" &&
+          dossier.forecast === null ? (
+            <p className="prose">No forecast submitted</p>
+          ) : forecast.status === "abstain" ? (
             <>
               <span className="small-caps">Forecast withheld</span>
               <p className="prose">{text(forecast.abstention_reason)}</p>

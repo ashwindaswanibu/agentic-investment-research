@@ -99,9 +99,16 @@ The [frozen pilot harness](benchmark-runner.md) now retains isolated attempts,
 global call budgets and crash receipts. Three real clinical families were acquired
 and import-verified. They remain unscored: [ADR 0003](decisions/0003-clinical-reference-scope.md)
 identified source/analysis/population distinctions that the current reference
-schema cannot faithfully represent. That reference contract is the next M1 gate.
+schema cannot faithfully represent. Source-qualified v2 outputs now preserve
+these distinctions, with explicit missingness, scoped group identities and bounded
+source navigation. Independent scoped reference construction remains the next
+M1 gate; structural validation is not a clinical score.
 [ADR 0004](decisions/0004-benchmark-harness.md) also requires an Inspect compatibility
-spike before growing custom evaluation scheduling or dashboards.
+spike before growing custom evaluation scheduling or dashboards. The
+[executed serial spike](decisions/inspect-adapter-spike.md) retained six synthetic
+attempts, including one deliberate failure, and reused terminal receipts without
+new requests. Transcript/budget export, interrupted-process parity and real
+provider execution remain required before adopting that adapter.
 Freeze the benchmark protocol before optimization: independently adjudicated
 references, critical-error categories, issuer/trial-family separation between
 development and final cases, repeated trials, budget-matched baselines, calibrated

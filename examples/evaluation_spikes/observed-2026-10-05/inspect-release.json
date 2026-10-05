@@ -1,0 +1,20 @@
+{
+  "version": "0.3.276",
+  "requires_python": ">=3.10",
+  "releases": [
+    {
+      "filename": "inspect_ai-0.3.276-py3-none-any.whl",
+      "sha256": "42849799ba4f51d272a7ca2385e8e78ea3ef911ec9a71a3054fb115bd4e78dbf",
+      "size_bytes": 34896487,
+      "upload_time": "2026-10-02T15:01:18.810136Z",
+      "yanked": false
+    },
+    {
+      "filename": "inspect_ai-0.3.276.tar.gz",
+      "sha256": "14cb59b52961cf962bd4a37d44e5040c0c521cb18b131950530f795663e8c45d",
+      "size_bytes": 36080195,
+      "upload_time": "2026-10-02T15:01:27.093566Z",
+      "yanked": false
+    }
+  ]
+}

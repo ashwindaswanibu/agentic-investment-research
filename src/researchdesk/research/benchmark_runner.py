@@ -43,7 +43,8 @@ from researchdesk.domain import (
 )
 from researchdesk.quality_workflow import DossierInput, save_dossier
 from researchdesk.quant import compare_binary_rates
-from researchdesk.research import CLINICAL_DOSSIER_GUIDANCE, ClinicalDossier
+from researchdesk.research import CLINICAL_DOSSIER_GUIDANCE, parse_dossier
+from researchdesk.source_navigation import InspectSourceInput, inspect_source
 from researchdesk.store import Store, content_hash
 
 from .benchmark_bundle import load_blob, load_bundle
@@ -59,6 +60,7 @@ from .benchmark_models import public_case_payload
 CORE_TOOLS = frozenset(
     {
         "read_artifact",
+        "inspect_source",
         "write_artifact",
         "search_library",
         "execute_python",
@@ -131,7 +133,7 @@ def benchmark_registry(research, arm, protocol):
         )
         if dossier["sha256"] != arguments.dossier_sha256:
             raise ToolError("benchmark_hash_mismatch", "Select the exact persisted dossier version")
-        ClinicalDossier.model_validate(dossier["content"]["dossier"])
+        parse_dossier(dossier["content"]["dossier"])
         return research.save(
             context,
             "note",
@@ -145,6 +147,15 @@ def benchmark_registry(research, arm, protocol):
         )
 
     specs = [
+        (
+            "inspect_source",
+            "Navigate frozen evidence by JSON pointer; retain exact raw types and citations. "
+            "Follow child/text cursors. Missing paths are not evidence of clinical absence.",
+            InspectSourceInput,
+            partial(inspect_source, research),
+            "read",
+            ALL_ROLES,
+        ),
         (
             "read_artifact",
             "Read source/artifact content in pages; follow next_read to the end.",
