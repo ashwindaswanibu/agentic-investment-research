@@ -2,21 +2,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Activity,
   ArrowLeft,
-  ArrowRight,
   ChevronRight,
-  Clock3,
-  FileText,
   GitBranch,
   Play,
   RefreshCw,
   Square,
   Terminal,
-  Workflow,
 } from "lucide-react";
 import {
   parseCase,
+  parseArtifact,
   parseCaseDetail,
   parseEvents,
   object,
@@ -28,16 +24,10 @@ import {
 } from "@/lib/contracts";
 import { mutate, request, message } from "@/lib/api";
 import { useResource } from "@/lib/use-resource";
-import {
-  dateTime,
-  duration,
-  isRecord,
-  label,
-  relativeTime,
-  scalar,
-} from "@/lib/format";
+import { dateTime, duration, isRecord, label, scalar } from "@/lib/format";
 import { useEnvironment } from "./app-shell";
-import { ArtifactCard, ArtifactModal, ReviewContent } from "./artifacts";
+import { ArtifactCard, ArtifactModal } from "./artifacts";
+import { InvestigationOverview } from "./investigation-overview";
 import { EmptyState, ErrorNotice, JsonDetails, Loading, Status } from "./ui";
 
 function useCaseEvents(caseId: string, onChange: () => void) {
@@ -96,10 +86,45 @@ export function CaseScreen({ caseId }: { caseId: string }) {
   const { capabilities, workspaces, canWrite } = useEnvironment();
   const [tab, setTab] = useState("research"),
     [selected, setSelected] = useState<Artifact | null>(null),
+    [loadingSource, setLoadingSource] = useState<string | null>(null),
     [busy, setBusy] = useState<string | null>(null),
     [actionError, setActionError] = useState<string | null>(null);
   const mutationKeys = useRef<Record<string, string>>({}),
     pending = useRef(false);
+  const sourceRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => sourceRequest.current?.abort(), [caseId]);
+  function openArtifact(artifact: Artifact) {
+    sourceRequest.current?.abort();
+    setLoadingSource(null);
+    setSelected(artifact);
+  }
+  async function openSource(id: string) {
+    sourceRequest.current?.abort();
+    const controller = new AbortController();
+    sourceRequest.current = controller;
+    setLoadingSource(id);
+    setActionError(null);
+    try {
+      const artifact = await request(
+        `/artifacts/${encodeURIComponent(id)}`,
+        parseArtifact,
+        { signal: controller.signal },
+      );
+      if (
+        !["evidence", "dataset"].includes(artifact.kind) ||
+        artifact.id !== id
+      )
+        throw new Error(
+          "This reference does not resolve to the recorded evidence. Inspect the dossier for its original citation.",
+        );
+      if (!controller.signal.aborted) setSelected(artifact);
+    } catch (e) {
+      if (!controller.signal.aborted)
+        setActionError(`Could not open the linked source. ${message(e)}`);
+    } finally {
+      if (!controller.signal.aborted) setLoadingSource(null);
+    }
+  }
   async function action(kind: "run" | "cancel") {
     if (!canWrite || pending.current) return;
     pending.current = true;
@@ -145,8 +170,6 @@ export function CaseScreen({ caseId }: { caseId: string }) {
   const evidence = data.artifacts.filter((a) =>
     ["evidence", "dataset"].includes(a.kind),
   );
-  const experiments = data.artifacts.filter((a) => a.kind === "experiment"),
-    reviews = data.artifacts.filter((a) => a.kind === "review");
   return (
     <div className="page case-page">
       <Link className="back-link" href="/">
@@ -227,19 +250,38 @@ export function CaseScreen({ caseId }: { caseId: string }) {
         aria-label="Investigation sections"
       >
         {[
-          { id: "research", label: "Research" },
+          { id: "research", label: "Overview" },
           { id: "evidence", label: "Evidence", count: evidence.length },
           { id: "artifacts", label: "Artifacts", count: data.artifacts.length },
           { id: "activity", label: "Activity", count: data.tool_calls.length },
-        ].map((item) => (
+        ].map((item, index, items) => (
           <button
             key={item.id}
             role="tab"
             id={`tab-${item.id}`}
             aria-selected={tab === item.id}
             aria-controls={`panel-${item.id}`}
+            tabIndex={tab === item.id ? 0 : -1}
             className={tab === item.id ? "tab-active" : ""}
             onClick={() => setTab(item.id)}
+            onKeyDown={(event) => {
+              const next =
+                event.key === "ArrowRight"
+                  ? (index + 1) % items.length
+                  : event.key === "ArrowLeft"
+                    ? (index + items.length - 1) % items.length
+                    : event.key === "Home"
+                      ? 0
+                      : event.key === "End"
+                        ? items.length - 1
+                        : null;
+              if (next === null) return;
+              event.preventDefault();
+              setTab(items[next].id);
+              event.currentTarget.parentElement
+                ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                [next]?.focus();
+            }}
           >
             {item.label}
             {item.count != null && <span>{item.count}</span>}
@@ -258,155 +300,15 @@ export function CaseScreen({ caseId }: { caseId: string }) {
       </div>
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === "research" && (
-          <div className="case-layout">
-            <div className="case-primary">
-              <section className="panel research-brief">
-                <div className="panel-header">
-                  <h2>Research brief</h2>
-                  <FileText size={16} className="muted" />
-                </div>
-                <div className="panel-body">
-                  <p className="prose preserve-lines">{data.hypothesis}</p>
-                </div>
-              </section>
-              {data.summary && (
-                <section className="panel finding-panel">
-                  <div className="panel-header">
-                    <h2>Latest finding</h2>
-                    <Status value={data.status} />
-                  </div>
-                  <div className="panel-body">
-                    <p className="prose preserve-lines">{data.summary}</p>
-                    <p className="field-help">
-                      Run summary. Refer to evidence, experiments, and review
-                      before interpreting it as a validated result.
-                    </p>
-                  </div>
-                </section>
-              )}
-              <section className="panel">
-                <div className="panel-header">
-                  <h2>
-                    Research & delegated work{" "}
-                    <span className="count">{data.tasks.length}</span>
-                  </h2>
-                  <Workflow size={17} className="muted" />
-                </div>
-                {data.tasks.length ? (
-                  <TaskList tasks={data.tasks} calls={data.tool_calls} />
-                ) : (
-                  <EmptyState
-                    title="Ready when you are"
-                    description="Launching this brief creates a recorded coordinator task. Delegated research, code execution, and review will appear here as they occur."
-                  />
-                )}
-              </section>
-              <section className="panel">
-                <div className="panel-header">
-                  <h2>Experiments & review</h2>
-                  <span className="count">
-                    {experiments.length + reviews.length}
-                  </span>
-                </div>
-                {experiments.length + reviews.length ? (
-                  <div className="artifact-list">
-                    {[...experiments, ...reviews].map((artifact) => (
-                      <ArtifactCard
-                        artifact={artifact}
-                        onOpen={setSelected}
-                        key={artifact.id}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="quiet-empty">
-                    No experiment or review has been recorded yet.
-                  </div>
-                )}
-              </section>
-              {reviews.length > 0 && (
-                <section className="panel">
-                  <div className="panel-header">
-                    <h2>Latest review</h2>
-                    <button
-                      className="text-button"
-                      onClick={() => setSelected(reviews[reviews.length - 1])}
-                    >
-                      Inspect record
-                      <ArrowRight size={13} />
-                    </button>
-                  </div>
-                  <div className="panel-body">
-                    <ReviewContent
-                      content={reviews[reviews.length - 1].content}
-                    />
-                  </div>
-                </section>
-              )}
-            </div>
-            <aside className="case-aside">
-              <section className="panel">
-                <div className="panel-header">
-                  <h2>Investigation context</h2>
-                </div>
-                <div className="panel-body">
-                  <dl className="context-list">
-                    <div>
-                      <dt>Shared tool budget</dt>
-                      <dd>
-                        {data.tool_calls_used}
-                        <span> / {data.tool_budget}</span>
-                      </dd>
-                    </div>
-                  </dl>
-                  <div
-                    className="budget-track"
-                    role="meter"
-                    aria-label="Shared tool budget used"
-                    aria-valuemin={0}
-                    aria-valuemax={data.tool_budget}
-                    aria-valuenow={data.tool_calls_used}
-                  >
-                    <span
-                      style={{
-                        width: `${Math.min(100, (data.tool_calls_used / Math.max(1, data.tool_budget)) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <dl className="context-list">
-                    <div>
-                      <dt>Tasks</dt>
-                      <dd>{data.tasks.length}</dd>
-                    </div>
-                    <div>
-                      <dt>Evidence & datasets</dt>
-                      <dd>{evidence.length}</dd>
-                    </div>
-                    <div>
-                      <dt>Experiments</dt>
-                      <dd>{experiments.length}</dd>
-                    </div>
-                    <div>
-                      <dt>Reviews</dt>
-                      <dd>{reviews.length}</dd>
-                    </div>
-                  </dl>
-                  <p className="field-help">
-                    Tool budget is shared by all agents working on this case.
-                  </p>
-                </div>
-              </section>
-              <section className="panel">
-                <div className="panel-header">
-                  <h2>Recent activity</h2>
-                  <Activity size={15} className="muted" />
-                </div>
-                <div className="panel-body">
-                  <EventList data={data} compact />
-                </div>
-              </section>
-            </aside>
-          </div>
+          <InvestigationOverview
+            data={data}
+            onOpen={openArtifact}
+            onOpenSource={(id) => void openSource(id)}
+            loadingSource={loadingSource}
+            onNavigate={setTab}
+          >
+            <TaskList tasks={data.tasks} calls={data.tool_calls} />
+          </InvestigationOverview>
         )}
         {tab === "evidence" && (
           <section className="panel">

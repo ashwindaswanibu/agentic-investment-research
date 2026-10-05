@@ -34,25 +34,35 @@ fixtures. Explain what works, how it works, measured results and limits without
 promotional claims. A public visitor cannot spend private credentials or control
 the paper account. Hosting/service access and costs must be explicit.
 
+Recurring research, strategy assessment, monitoring and refinement are product
+capabilities implemented in this repository, with persistent state, tests and
+visible records. Manual operator checks support development; they must not be
+the operating process. A Codex reminder is not the platform's scheduler.
+Show Ashwin meaningful functioning changes in the local preview as they pass
+verification. Document agents, prompt sources, tool permissions and delegation
+paths in architecture diagrams linked to the actual implementation; update those
+maps alongside relevant code changes.
+
 ## One active deliverable
 
 The guided mechanical evaluation checkpoint is implemented and locally verified;
 independent source/key review is still pending. Do not expand that infrastructure
 while the product's actual research value remains untested.
 
-**Now: complete the investigation overview page.** Existing findings are buried
-under artifact lists; execution counters dominate the overview. Reorder the page
-around the latest recorded findings, unresolved questions, relevant evidence and
-agent work. Use actual persisted data. Support empty, active, completed, failed
-and read-only cases without invented results. Preserve artifact inspection,
-source access, launch/cancellation and execution diagnostics.
+The investigation overview is implemented and locally verified; see its
+[verification record](research/investigation-overview.md). Findings, open
+questions and evidence now precede execution counters; linked evidence can be
+opened across cases. This completes that bounded page change, not the whole UX.
 
-Done means functioning interactions, regression checks, readable desktop and
-narrow-screen layouts, keyboard access, and browser verification against actual
-saved cases. Finish this page before beginning the next component. No new
-backend, framework, generalized dashboard or options engine is needed for it.
+**Now: automatic assessment of strategy experiments.** Inspect the real saved
+strategy and results, then implement a persisted assessment produced by the
+experiment workflow. It must distinguish observed historical profitability from
+validated edge, compare the existing baselines, identify unsupported claims and
+missing evaluation evidence, and expose the result in the workbench. No new
+strategy search, autonomous trading activation or options engine in this step.
+Finish and verify this path before beginning another component.
 
-After that checkpoint, select one concrete research-value experiment. Research
+Research
 papers such as [RD-Agent(Q)](https://arxiv.org/html/2505.15155v1) and its
 [maintainer implementation](https://github.com/microsoft/RD-Agent) are comparison
 candidates, not imported performance claims or adopted dependencies. Inspect
