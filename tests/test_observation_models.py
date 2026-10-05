@@ -169,6 +169,13 @@ def test_typed_ledger_round_trips_without_flattening(dossier_v2):
     assert ClinicalDossierV2.model_validate_json(dossier.model_dump_json()) == dossier
 
 
+def test_extraction_only_dossier_needs_no_manufactured_clinical_claim(dossier_v2):
+    parsed = ClinicalDossierV2.model_validate(dossier_v2 | {"claims": [], "forecast": None})
+    assert parsed.claims == []
+    with pytest.raises(ValidationError, match="supporting claims"):
+        ClinicalDossierV2.model_validate(dossier_v2 | {"claims": []})
+
+
 @pytest.mark.parametrize("value", [0, 7])
 def test_present_strict_integer_preserves_zero(value):
     assert TypeAdapter(FieldValue[int]).validate_python(present(value)).value == value

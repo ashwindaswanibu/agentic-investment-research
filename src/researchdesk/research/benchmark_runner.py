@@ -47,7 +47,7 @@ from researchdesk.research import CLINICAL_DOSSIER_GUIDANCE, parse_dossier
 from researchdesk.source_navigation import InspectSourceInput, inspect_source
 from researchdesk.store import Store, content_hash
 
-from .benchmark_bundle import load_blob, load_bundle
+from .benchmark_bundle import load_blob, load_bundle, load_public_scope
 from .benchmark_journal import (
     Journal,
     MeteredProvider,
@@ -277,6 +277,19 @@ def _prepare(store, bundle_path, manifest, protocol, case, attempt):
         source["package_artifact_id"] = source["artifact_id"]
         source["artifact_id"] = artifact["id"]
         artifact_ids.append(artifact["id"])
+    scope = load_public_scope(bundle_path / "blobs", manifest, protocol, case)
+    if scope is not None:
+        public["mechanical_scope"] = scope.model_dump(mode="json")
+        public["mechanical_scope_sha256"] = scope.sha256
+        public["mechanical_scope_instructions"] = (
+            "This is guided registry extraction over the declared fields. Use the exact "
+            "public trial, context and observation IDs and source locations; source_id maps "
+            "to the attempt-local artifact_id in sources. Preserve required group and endpoint "
+            "relationships. Unscored required fields may be unresolved; do not invent them. "
+            "Additional observations cannot increase the scoped score and still need evidence. "
+            "Source guidance removes discovery from this diagnostic; it does not measure "
+            "clinical reasoning or investment skill."
+        )
     briefing = store.put_artifact(
         record["id"],
         None,

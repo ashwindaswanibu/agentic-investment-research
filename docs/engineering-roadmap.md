@@ -51,6 +51,12 @@ against simpler alternatives and retain negative results.
    rollback behavior, and what future evidence triggers reconsideration. Update
    the showcase and resume only to match verified capabilities.
 
+At each checkpoint, name the direct contribution to the product goal and the
+finite stopping condition. Prefer one complete research-to-decision path over
+additional infrastructure. A new abstraction, service, framework or feature
+needs a demonstrated failure or measurable benefit; a plausible future use is
+insufficient. Record deferred work so thoroughness does not become endless scope.
+
 Maturity labels are **specified → implemented → verified in isolation → integrated
 → qualified for the stated use**. “Production grade” is a conclusion supported by
 operating evidence, never a synonym for code existing or tests passing. We will
@@ -101,8 +107,12 @@ and import-verified. They remain unscored: [ADR 0003](decisions/0003-clinical-re
 identified source/analysis/population distinctions that the current reference
 schema cannot faithfully represent. Source-qualified v2 outputs now preserve
 these distinctions, with explicit missingness, scoped group identities and bounded
-source navigation. Independent scoped reference construction remains the next
-M1 gate; structural validation is not a clinical score.
+source navigation. The [bounded mechanical evaluation checkpoint](research/mechanical-evaluation.md)
+now includes public scopes, private source projections, a deterministic baseline,
+protected comparisons and field-level inspection. All 38 declared real-source
+fields were reproduced by deterministic copying; deliberate count errors were
+isolated. This verifies the instrument, not agent research quality. Independent
+source/key review and authenticated model comparisons remain unfinished.
 [ADR 0004](decisions/0004-benchmark-harness.md) also requires an Inspect compatibility
 spike before growing custom evaluation scheduling or dashboards. The
 [executed serial spike](decisions/inspect-adapter-spike.md) retained six synthetic

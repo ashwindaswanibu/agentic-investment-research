@@ -7,6 +7,7 @@ import {
   ClinicalObservationLedger,
   EvidenceReferences as References,
 } from "./clinical-observations";
+import { MechanicalComparisonContent } from "./mechanical-comparison";
 
 const records = (value: Json | undefined): JsonObject[] =>
   Array.isArray(value) ? value.filter(isRecord) : [];
@@ -330,6 +331,8 @@ function ExtractionErrors({
   );
 }
 export function EvaluationContent({ content }: { content: JsonObject }) {
+  if (content.schema_version === "clinical-mechanical-comparison.v1")
+    return <MechanicalComparisonContent content={content} />;
   const candidate = isRecord(content.candidate) ? content.candidate : {};
   const baseline = isRecord(content.baseline) ? content.baseline : {};
   const delta = number(content.f1_delta);

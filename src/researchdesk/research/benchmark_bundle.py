@@ -65,10 +65,62 @@ def implementation_sha256() -> str:
     return content_hash(hashes)
 
 
-def _digests(manifest: DatasetManifest) -> set[str]:
-    return {s.artifact_sha256 for s in manifest.sources} | {
+def _digests(manifest: DatasetManifest, protocol=None) -> set[str]:
+    digests = {s.artifact_sha256 for s in manifest.sources} | {
         c.reference_sha256 for c in manifest.cases if c.reference_sha256
     }
+    if protocol is not None:
+        digests.update(item.scope_sha256 for item in protocol.public_scopes)
+    return digests
+
+
+def load_public_scope(blobs, manifest, protocol, case):
+    """Load only the explicitly declared public contract, never the answer key."""
+    from .scoped_models import MechanicalScope
+
+    binding = next((item for item in protocol.public_scopes if item.case_id == case.case_id), None)
+    if binding is None:
+        return None
+    scope = MechanicalScope.model_validate(load_blob(blobs, binding.scope_sha256))
+    if (
+        scope.scope_id != binding.scope_id
+        or scope.case_id != case.case_id
+        or scope.sha256 != binding.scope_sha256
+    ):
+        raise ValueError("Public scope identity differs from its protocol binding")
+    sources = {source.source_id: source for source in manifest.sources}
+    for source in scope.sources:
+        if source.source_id not in case.source_ids or (
+            sources[source.source_id].artifact_sha256 != source.artifact_sha256
+        ):
+            raise ValueError("Public scope must bind the case's exact public source versions")
+    return scope
+
+
+def _validate_scoped_references(blobs, manifest, protocol):
+    from .scoped_models import MechanicalReference
+    from .scoped_quality import validate_mechanical_reference
+
+    sources = {source.source_id: source for source in manifest.sources}
+    for case in manifest.cases:
+        scope = load_public_scope(blobs, manifest, protocol, case)
+        if scope is None:
+            continue
+        if case.reference_method != "programmatic":
+            raise ValueError("Guided mechanical scopes require a programmatic reference")
+        reference = MechanicalReference.model_validate(load_blob(blobs, case.reference_sha256))
+        if reference.reference_id != case.reference_id or reference.sha256 != case.reference_sha256:
+            raise ValueError("Mechanical reference identity differs from the manifest")
+        artifacts = {
+            item.source_id: {
+                "id": sources[item.source_id].artifact_id,
+                "sha256": item.artifact_sha256,
+                "kind": "evidence",
+                "content": load_blob(blobs, item.artifact_sha256),
+            }
+            for item in scope.sources
+        }
+        validate_mechanical_reference(scope, reference, artifacts)
 
 
 def load_blob(blobs: Path, digest: str):
@@ -90,13 +142,14 @@ def freeze_bundle(*, manifest_path: Path, protocol_path: Path, blobs: Path, outp
         raise ValueError("Output already exists; create a new version instead of overwriting")
     content = {}
     total = 0
-    for digest in sorted(_digests(manifest)):
+    for digest in sorted(_digests(manifest, protocol)):
         value = load_blob(blobs, digest)
         encoded = canonical_bytes(value)
         total += len(encoded)
         if total > MAX_BUNDLE_BYTES:
             raise ValueError("Bundle exceeds the 100 MB content limit")
         content[digest] = encoded
+    _validate_scoped_references(blobs, manifest, protocol)
     binding = {
         "schema_version": "research-benchmark-bundle.v1",
         "manifest_sha256": manifest.sha256,
@@ -104,7 +157,11 @@ def freeze_bundle(*, manifest_path: Path, protocol_path: Path, blobs: Path, outp
         "implementation_sha256": implementation_sha256(),
         "blob_sha256": sorted(content),
         "scope": "frozen evidence; profile adaptation; no generated-tool qualification",
-        "reference_validation": "byte binding only; no gold validity or clinical score certified",
+        "reference_validation": (
+            "scoped source projection verified; no expert adjudication or clinical score certified"
+            if protocol.public_scopes
+            else "byte binding only; no gold validity or clinical score certified"
+        ),
     }
     receipt = {**binding, "sha256": content_hash(binding)}
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -143,7 +200,7 @@ def load_bundle(path: Path):
         or receipt.get("manifest_sha256") != manifest.sha256
         or receipt.get("protocol_sha256") != protocol.sha256
         or receipt.get("implementation_sha256") != implementation_sha256()
-        or receipt.get("blob_sha256") != sorted(_digests(manifest))
+        or receipt.get("blob_sha256") != sorted(_digests(manifest, protocol))
     ):
         raise ValueError("Bundle inputs or implementation changed; freeze a new version")
     total = 0
@@ -151,4 +208,5 @@ def load_bundle(path: Path):
         total += len(canonical_bytes(load_blob(path / "blobs", blob)))
         if total > MAX_BUNDLE_BYTES:
             raise ValueError("Bundle exceeds the 100 MB content limit")
+    _validate_scoped_references(path / "blobs", manifest, protocol)
     return manifest, protocol, binding

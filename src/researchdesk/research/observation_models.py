@@ -305,7 +305,7 @@ class ClinicalDossierV2(ObservationContract):
     contexts: list[ObservationContext] = Field(min_length=1, max_length=150)
     observations: list[ClinicalObservation] = Field(min_length=1, max_length=300)
     reconciliations: list[Reconciliation] = Field(max_length=100)
-    claims: list[ClinicalClaim] = Field(min_length=1, max_length=300)
+    claims: list[ClinicalClaim] = Field(max_length=300)
     contrary_evidence_claim_ids: list[Identifier] = Field(max_length=300)
     contrary_evidence_summary: Text
     missing_inputs: list[MissingInput] = Field(max_length=100)
@@ -315,3 +315,11 @@ class ClinicalDossierV2(ObservationContract):
         "provide its falsifiable target and real dates or an explicit abstention; never invent "
         "forecast dates to satisfy the output schema."
     )
+
+    @model_validator(mode="after")
+    def forecast_has_claims(self):
+        # A source-extraction dossier can consist entirely of observations. Do
+        # not force a deterministic extractor to manufacture a clinical claim.
+        if self.forecast is not None and not self.claims:
+            raise ValueError("A forecast dossier must include supporting claims")
+        return self

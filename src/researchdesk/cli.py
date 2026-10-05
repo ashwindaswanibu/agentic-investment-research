@@ -140,6 +140,13 @@ def main():
     evaluation.add_argument("--baseline-id", required=True)
     evaluation.add_argument("--reference", type=Path, required=True)
     evaluation.add_argument("--key", required=True, help="Stable unique key for this comparison")
+    mechanical = sub.add_parser(
+        "evaluate-mechanical", help="Operator-only guided source extraction comparison"
+    )
+    for name in ("case-id", "candidate-id", "baseline-id", "key"):
+        mechanical.add_argument(f"--{name}", required=True)
+    for name in ("scope", "reference", "sources"):
+        mechanical.add_argument(f"--{name}", type=Path, required=True)
     freeze = sub.add_parser(
         "benchmark-freeze", help="Validate and freeze a versioned source bundle"
     )
@@ -196,6 +203,35 @@ def main():
         except (ValueError, OSError) as exc:
             raise SystemExit(str(exc)) from exc
         print(json.dumps(result, indent=2))
+    elif args.command == "evaluate-mechanical":
+        from researchdesk.mechanical_workflow import evaluate_mechanical_comparison
+        from researchdesk.research.benchmark_bundle import read_json
+
+        if settings.read_only:
+            raise SystemExit("Read-only deployments cannot record evaluations.")
+        scope = read_json(args.scope, maximum=200_000)
+        reference = read_json(args.reference, maximum=500_000)
+        sources = read_json(args.sources, maximum=20_000)
+        store = Store(settings.database_url)
+        try:
+            result = evaluate_mechanical_comparison(
+                store,
+                candidate_id=args.candidate_id,
+                baseline_id=args.baseline_id,
+                scope=scope,
+                reference=reference,
+                source_bindings=sources,
+                case_id=args.case_id,
+                key=args.key,
+            )
+            print(
+                json.dumps(
+                    {"id": result["id"], "sha256": result["sha256"], "content": result["content"]},
+                    indent=2,
+                )
+            )
+        finally:
+            store.close()
     elif args.command == "evaluate-extraction":
         from researchdesk.quality_workflow import evaluate_extraction
 

@@ -13,7 +13,15 @@ from datetime import UTC, datetime
 from typing import Annotated, Literal
 from urllib.parse import urlsplit, urlunsplit
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    HttpUrl,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 Identifier = Annotated[str, Field(min_length=1, max_length=200)]
 Text = Annotated[str, Field(min_length=1, max_length=12000)]
@@ -228,6 +236,12 @@ class FixedSpecialistInstructions(FrozenContract):
     reviewer: Text
 
 
+class PublicScopeBinding(FrozenContract):
+    case_id: Identifier
+    scope_id: Identifier
+    scope_sha256: Sha256
+
+
 class BenchmarkProtocol(FrozenContract):
     """One resource envelope/model for all arms; grading declarations are not executed here."""
 
@@ -249,8 +263,18 @@ class BenchmarkProtocol(FrozenContract):
     predeclared_metrics: tuple[Text, ...] = Field(min_length=1, max_length=100)
     decision_limits: tuple[Text, ...] = Field(min_length=1, max_length=100)
     stopping_criteria: tuple[Text, ...] = Field(min_length=1, max_length=100)
+    public_scopes: tuple[PublicScopeBinding, ...] = Field(default=(), max_length=10000)
 
     _created = field_validator("created_at")(_aware)
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_serialization(self, handler):
+        # Existing frozen protocols predate this optional input. Their canonical
+        # bytes and hashes must remain unchanged when no scope was declared.
+        value = handler(self)
+        if not self.public_scopes:
+            value.pop("public_scopes", None)
+        return value
 
     @model_validator(mode="after")
     def comparisons(self):
@@ -258,6 +282,8 @@ class BenchmarkProtocol(FrozenContract):
             raise ValueError("protocol must include each comparison arm exactly once")
         for name in ("predeclared_metrics", "decision_limits", "stopping_criteria"):
             _unique(getattr(self, name), name)
+        _unique(tuple(item.case_id for item in self.public_scopes), "Scoped case IDs")
+        _unique(tuple(item.scope_id for item in self.public_scopes), "Public scope IDs")
         return self
 
 
@@ -271,6 +297,10 @@ def validate_benchmark(
         raise ValueError("protocol dataset_manifest_sha256 does not match the manifest")
     if protocol.created_at < manifest.created_at:
         raise ValueError("protocol creation cannot precede the frozen dataset manifest")
+    if protocol.public_scopes and {item.case_id for item in protocol.public_scopes} != {
+        case.case_id for case in manifest.cases
+    }:
+        raise ValueError("a guided protocol must declare one public scope for every case")
     return manifest, protocol
 
 
