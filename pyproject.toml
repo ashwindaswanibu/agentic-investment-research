@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentic-investment-research"
+version = "0.1.0"
+description = "An inspectable agentic research workbench with versioned experiments and paper accounting"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.34,<1", "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3", "sqlalchemy>=2.0.36,<3", "httpx>=0.28,<1",
+  "numpy>=2.0,<3", "scipy>=1.14,<2", "psycopg[binary]>=3.2,<4",
+  "beautifulsoup4>=4.12,<5", "yfinance>=0.2.65,<2"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "pytest-cov>=6,<8", "ruff>=0.11,<1", "pip-audit>=2.8,<3"]
+retrieval = ["fastembed>=0.7,<1"]
+
+[project.scripts]
+researchdesk = "researchdesk.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/researchdesk"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires external services", "live: uses a configured real model provider", "sandbox: requires a running Docker daemon and sandbox image"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
