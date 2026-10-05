@@ -16,6 +16,7 @@ from researchdesk.agents import Runtime, create_provider, provider_health
 from researchdesk.api import create_app, provider_config
 from researchdesk.config import Settings
 from researchdesk.domain import ResearchTools
+from researchdesk.paper_operations import PaperOperations, quote_provider
 from researchdesk.store import Store
 
 
@@ -88,6 +89,33 @@ def worker(settings: Settings, *, once=False):
         store.close()
 
 
+def paper_worker(settings: Settings, *, once=False):
+    if settings.read_only:
+        raise SystemExit("Read-only deployments cannot run paper workers.")
+    store = Store(settings.database_url)
+    operations = PaperOperations(store, ResearchTools(store, settings), quote_provider(settings))
+    worker_id, stop = str(uuid4()), threading.Event()
+    previous = {}
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        previous[sig] = signal.signal(sig, lambda _signum, _frame: stop.set())
+    try:
+        while not stop.is_set():
+            interval = 30
+            try:
+                result = operations.tick(worker_id)
+                logging.info("paper_tick status=%s", result["status"])
+                interval = result.get("next_poll_seconds", 5)
+            except Exception:
+                logging.error("paper_tick_failed; no partial transaction was committed")
+            if once:
+                break
+            stop.wait(interval)
+    finally:
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
+        store.close()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Research Desk: paper-only agentic investment research"
@@ -98,6 +126,10 @@ def main():
     serve.add_argument("--port", type=int, default=8010)
     job = sub.add_parser("worker", help="Run a durable research worker")
     job.add_argument("--once", action="store_true")
+    paper_job = sub.add_parser(
+        "paper-worker", help="Monitor and execute reviewed paper intents within an explicit mandate"
+    )
+    paper_job.add_argument("--once", action="store_true")
     sub.add_parser("doctor", help="Show nonsecret provider, storage, and sandbox readiness")
     evaluation = sub.add_parser(
         "evaluate-extraction",
@@ -119,6 +151,8 @@ def main():
         uvicorn.run(create_app(settings), host=args.host, port=args.port)
     elif args.command == "worker":
         worker(settings, once=args.once)
+    elif args.command == "paper-worker":
+        paper_worker(settings, once=args.once)
     elif args.command == "evaluate-extraction":
         from researchdesk.quality_workflow import evaluate_extraction
 

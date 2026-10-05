@@ -99,5 +99,33 @@ services:
     stop_grace_period: 150s
     restart: "no"
 
+  paper-worker:
+    profiles: [paper]
+    build:
+      context: .
+      dockerfile: deploy/backend.Dockerfile
+      target: api
+    command: ["paper-worker"]
+    healthcheck:
+      disable: true
+    environment:
+      RESEARCHDESK_DATABASE_URL: postgresql+psycopg://researchdesk:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/researchdesk
+      RESEARCHDESK_READ_ONLY: ${RESEARCHDESK_READ_ONLY:-true}
+      RESEARCHDESK_PROVIDER: disabled
+      RESEARCHDESK_ALPACA_API_KEY: ${RESEARCHDESK_ALPACA_API_KEY:-}
+      RESEARCHDESK_ALPACA_SECRET_KEY: ${RESEARCHDESK_ALPACA_SECRET_KEY:-}
+      RESEARCHDESK_ALPACA_FEED: ${RESEARCHDESK_ALPACA_FEED:-iex}
+      RESEARCHDESK_ARTIFACT_DIR: /tmp/researchdesk-artifacts
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 60s
+    restart: unless-stopped
+
 volumes:
   postgres_data:

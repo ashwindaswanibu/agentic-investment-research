@@ -118,6 +118,46 @@ class SystemRow(Base):
     value: Mapped[dict] = mapped_column(JSON)
 
 
+class PaperMandateRow(Base):
+    __tablename__ = "paper_mandates"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+    sha256: Mapped[str] = mapped_column(String(64))
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    created_at: Mapped[str] = mapped_column(String(40), default=utcnow)
+    peak_equity: Mapped[str | None] = mapped_column(String(100))
+    drawdown_tripped: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class PaperControlRow(Base):
+    __tablename__ = "paper_control"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, default=0)
+    mode: Mapped[str] = mapped_column(String(20), default="halted")
+    mandate_id: Mapped[str | None] = mapped_column(ForeignKey("paper_mandates.id"))
+    worker_id: Mapped[str | None] = mapped_column(String(100))
+    lease_until: Mapped[float | None] = mapped_column(Float)
+    fence: Mapped[int] = mapped_column(Integer, default=0)
+    last_seen_at: Mapped[str | None] = mapped_column(String(40))
+    latest_tick: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    peak_equity: Mapped[str | None] = mapped_column(String(100))
+    drawdown_tripped: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class PaperObservationRow(Base):
+    __tablename__ = "paper_observations"
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    account_id: Mapped[str] = mapped_column(String(36), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
+class MarketSessionRow(Base):
+    __tablename__ = "paper_market_sessions"
+    session: Mapped[str] = mapped_column(String(10), primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
 def make_engine(url: str):
     kwargs = {"pool_pre_ping": True}
     if url.startswith("sqlite"):

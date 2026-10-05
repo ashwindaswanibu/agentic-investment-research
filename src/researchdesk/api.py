@@ -19,6 +19,12 @@ from researchdesk.config import Settings
 from researchdesk.domain import Input, ResearchTools
 from researchdesk.errors import DomainError
 from researchdesk.paper import PaperError, Quote
+from researchdesk.paper_operations import (
+    ControlInput,
+    MandateInput,
+    PaperOperations,
+    quote_provider,
+)
 from researchdesk.quant import QuantError
 from researchdesk.service import PaperService
 from researchdesk.store import WORKSPACES, Store
@@ -83,6 +89,7 @@ def create_app(settings=None, store=None, research=None):
     store = store or Store(settings.database_url)
     research = research or ResearchTools(store, settings)
     paper = PaperService(store, research)
+    operations = PaperOperations(store, research, quote_provider(settings))
 
     @asynccontextmanager
     async def lifespan(app):
@@ -388,6 +395,22 @@ def create_app(settings=None, store=None, research=None):
     @app.get("/api/paper/portfolio", dependencies=read)
     def portfolio():
         return paper.portfolio()
+
+    @app.get("/api/paper/operations", dependencies=read)
+    def paper_operations():
+        return operations.status()
+
+    @app.get("/api/paper/performance", dependencies=read)
+    def paper_performance():
+        return operations.performance()
+
+    @app.post("/api/paper/mandates", dependencies=write, status_code=201)
+    def paper_mandate(body: MandateInput, key=Depends(request_key)):
+        return operations.create_mandate(body, "mandate:" + key)
+
+    @app.post("/api/paper/operations/control", dependencies=write)
+    def paper_control(body: ControlInput):
+        return operations.set_control(body)
 
     @app.post("/api/paper/account", dependencies=write, status_code=201)
     def open_account(body: AccountInput, key=Depends(request_key)):

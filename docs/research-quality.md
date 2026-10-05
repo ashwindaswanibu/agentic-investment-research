@@ -88,8 +88,9 @@ future outcomes must supply that evidence before claiming superior judgment.
 
 ## Remaining investment validation
 
-Continuous source monitoring, prospective forecast resolution, automatic paper
-execution, options lifecycle accounting and portfolio allocation remain separate
-work. Researchdesk currently supports daily-bar equity experiments and an
-operator-driven paper ledger. Do not describe this version as an autonomous
-trading operation or as demonstrating alpha.
+Continuous source monitoring, prospective forecast resolution, options lifecycle
+accounting and portfolio allocation remain separate work. A bounded paper worker
+can now consume reviewed equity intents under an explicit operator mandate, with
+fresh quotes and monitored accounting. This does not close the full autonomous
+research-to-portfolio loop or demonstrate alpha. Follow the staged acceptance
+gates in [the engineering roadmap](engineering-roadmap.md).

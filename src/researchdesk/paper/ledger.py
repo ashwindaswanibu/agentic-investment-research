@@ -134,6 +134,7 @@ class PaperState:
     positions: dict[str, Holding] = field(default_factory=dict)
     orders: dict[str, OpenOrder] = field(default_factory=dict)
     event_count: int = 0
+    liquidity_used: dict[str, int] = field(default_factory=dict)
 
     @property
     def reserved_cash(self) -> Decimal:
@@ -188,6 +189,17 @@ def _reserved_shares(state: PaperState, symbol: str) -> int:
         for order in state.orders.values()
         if order.status == "open" and order.intent.symbol == symbol and order.intent.side == "sell"
     )
+
+
+def liquidity_key(quote: Quote, side: str) -> str:
+    """An unchanged displayed quote cannot supply fresh liquidity on every poll."""
+    raw = {"quote": quote.model_dump(mode="json"), "side": side}
+    for name in ("bid", "ask"):
+        # normalize() can round long Decimals under the active context; fixed
+        # formatting and trailing-zero removal preserve the exact economic value.
+        price = format(getattr(quote, name), "f")
+        raw["quote"][name] = price.rstrip("0").rstrip(".") if "." in price else price
+    return hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest()
 
 
 def replay(events: list[PaperEvent | dict]) -> PaperState:
@@ -272,6 +284,13 @@ def replay(events: list[PaperEvent | dict]) -> PaperState:
             if fill.fee != fill.quantity * fill.price * order.fee_bps / 10000:
                 raise PaperError("invalid_fee", "fill fee does not match the reserved fee schedule")
             symbol, side = order.intent.symbol, order.intent.side
+            quote_key = liquidity_key(fill.quote, side)
+            consumed = state.liquidity_used.get(quote_key, 0) + fill.quantity
+            if consumed > (fill.quote.ask_size if buy else fill.quote.bid_size):
+                raise PaperError(
+                    "quote_liquidity_exhausted", "displayed quote liquidity was already consumed"
+                )
+            state.liquidity_used[quote_key] = consumed
             position = state.positions.setdefault(symbol, Holding())
             if side == "buy":
                 if fill.price > order.intent.limit_price:
@@ -458,6 +477,7 @@ def fill_order(
         )
     buy = order.intent.side == "buy"
     price, size = (quote.ask, quote.ask_size) if buy else (quote.bid, quote.bid_size)
+    size -= state.liquidity_used.get(liquidity_key(quote, order.intent.side), 0)
     if (buy and price > order.intent.limit_price) or (not buy and price < order.intent.limit_price):
         raise PaperError(
             "limit_not_marketable", "current quoted price does not meet the order limit"

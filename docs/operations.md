@@ -159,7 +159,8 @@ python -m pip_audit -r requirements.lock --no-deps --disable-pip
 ```
 
 For real PostgreSQL concurrency tests, set `RESEARCHDESK_TEST_DATABASE_URL` to a
-disposable PostgreSQL database and run `pytest -q tests/test_postgres.py`. The user
+disposable PostgreSQL database and run
+`pytest -q tests/test_postgres.py tests/test_paper_operations_postgres.py`. The user
 must be able to create schemas. Tests create and remove only uniquely named test
 schemas. Do not aim integration tests at a production database.
 
@@ -201,3 +202,7 @@ missing model authentication blocks agent launch. Dense retrieval must be enable
 explicitly and may download its public embedding model on first use; it never
 silently becomes lexical retrieval. `HF_HUB_DISABLE_IMPLICIT_TOKEN=1` prevents
 automatic use of an ambient Hugging Face login for public model downloads.
+
+Paper monitoring uses a separate worker without model credentials or a Docker
+socket. See [the paper operations contract](paper-operations.md) for explicit
+mandates, modes, data configuration and performance semantics.

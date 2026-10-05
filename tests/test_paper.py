@@ -278,3 +278,83 @@ def test_seeded_partial_fills_preserve_cash_cost_basis_identity():
         basis = sum((p.cost_basis for p in state.positions.values()), D(0))
         assert abs(state.cash + basis - state.initial_cash - state.realized_pnl) < D("1e-20")
         assert state.available_cash == state.cash
+
+
+def test_repolling_same_displayed_quote_does_not_replenish_liquidity():
+    events = [opening()]
+    reserve(events, order(quantity=8))
+    fill(events, "one", quote(size=5), key="first-poll")
+    restored = replay([event.model_dump(mode="json") for event in events])
+    with pytest.raises(PaperError) as error:
+        fill_order(restored, "one", quote(size=5), POLICY, T, idempotency_key="second-poll")
+    assert error.value.code == "no_liquidity"
+    assert restored.positions["TEST"].quantity == 5
+    assert restored.cash == D("950")
+    assert restored.reserved_cash == D("30")
+
+
+def test_displayed_liquidity_is_shared_across_orders():
+    events = [opening()]
+    reserve(events, order(quantity=4, order_id="first"))
+    reserve(events, order(quantity=4, order_id="second"))
+    fill(events, "first", quote(size=5), key="first-fill")
+    second = fill(events, "second", quote(size=5), key="second-fill")
+    assert second.payload["quantity"] == 1
+    state = replay(events)
+    assert state.positions["TEST"].quantity == 5
+    assert state.orders["second"].remaining == 3
+    assert state.reserved_cash == D("30")
+
+
+def test_replay_rejects_individually_valid_fills_exceeding_shared_liquidity():
+    events = [opening()]
+    reserve(events, order(quantity=4, order_id="first"))
+    reserve(events, order(quantity=4, order_id="second"))
+    before = replay(events)
+    first = fill_order(before, "first", quote(size=5), POLICY, T, idempotency_key="first-fill")
+    second = fill_order(before, "second", quote(size=5), POLICY, T, idempotency_key="second-fill")
+    with pytest.raises(PaperError) as error:
+        replay(events + [first, second])
+    assert error.value.code == "quote_liquidity_exhausted"
+
+
+def test_bid_and_ask_liquidity_are_independent():
+    events = [opening()]
+    reserve(events, order(quantity=5))
+    fill(events, "one", quote(size=5))
+    reserve(events, order("sell", quantity=5, order_id="sell"))
+    fill(events, "sell", quote(size=5))
+    state = replay(events)
+    assert state.positions == {}
+    assert state.cash == D("1000")
+
+
+def test_new_quote_event_supplies_new_liquidity_after_partial_fill():
+    events = [opening()]
+    reserve(events, order(quantity=8))
+    fill(events, "one", quote(size=5), key="first-event")
+    next_at = T + timedelta(seconds=1)
+    next_fill = fill(events, "one", quote(size=5, at=next_at), at=next_at, key="next-event")
+    assert next_fill.payload["quantity"] == 3
+    assert replay(events).positions["TEST"].quantity == 8
+    assert replay(events).reserved_cash == 0
+
+
+def test_duplicate_fill_does_not_consume_displayed_liquidity_twice():
+    events = [opening()]
+    reserve(events, order(quantity=2, order_id="first"))
+    reserve(events, order(quantity=3, order_id="second"))
+    first = fill(events, "first", quote(size=5))
+    events.append(first)
+    second = fill(events, "second", quote(size=5))
+    assert second.payload["quantity"] == 3
+    assert replay(events).positions["TEST"].quantity == 5
+
+
+def test_equivalent_decimal_quote_prices_do_not_reset_displayed_liquidity():
+    events = [opening()]
+    reserve(events, order(quantity=8))
+    fill(events, "one", quote("10", size=5), key="first-poll")
+    with pytest.raises(PaperError) as error:
+        fill(events, "one", quote("10.0", size=5), key="second-poll")
+    assert error.value.code == "no_liquidity"

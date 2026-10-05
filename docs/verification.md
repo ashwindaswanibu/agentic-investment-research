@@ -25,3 +25,43 @@ The real model-driven research workflow still needs validation with an
 authenticated provider. No independently labelled real-world benchmark score,
 prospective forecast record, autonomous trading result or remote CI result is
 claimed by this verification record.
+
+## Paper operations milestone, 2026-10-05
+
+The staged engineering method and remaining component gates are recorded in
+[the roadmap](engineering-roadmap.md); this milestone does not qualify the full
+investment system.
+
+- 420 Python tests passed with external integration, sandbox and live-provider
+  tests excluded. New cases include strict quote/calendar boundaries, hand-derived
+  P&L, mandate controls, reviewed-intent admission, liquidity reuse, close scheduling,
+  missing baselines, same-tick drawdown and rollback. Test market inputs are synthetic.
+- Four additional tests passed against actual PostgreSQL 17.11 in disposable
+  schemas: competing claims, competing control changes, a halt during quote fetch,
+  and failure after ledger flush followed by a single successful retry.
+- 52 frontend tests, TypeScript and a production build passed. An actual isolated
+  API response passed the production frontend parser. Browser review verified the
+  empty main state and mandate form, then a separate explicitly synthetic account:
+  active → exit only → halted controls, unchanged held positions, stale valuations,
+  missing P&L baselines, chart gaps and failure messages. Duplicate rounded chart
+  labels were corrected and visually rechecked. Temporary QA services were stopped;
+  no synthetic mandates or valuations were added to the main account.
+- Independent review identified and reproduced Decimal-spelling liquidity reuse,
+  drawdown-latch bypass, missed close windows, incompatible closing freshness and
+  truncated baseline issues. Fixes have regression coverage. Drawdown is also
+  rechecked after each accepted fill before subsequent entries.
+- Ruff lint/format and diff whitespace checks passed. CI now includes the new
+  PostgreSQL operations tests; remote CI has not run because publication is pending.
+
+The local app starts with no saved/active mandate, no market credentials and no
+paper worker heartbeat. This is an honest unconfigured state. The authenticated
+Alpaca smoke is unrun; no brokerage orders, live-feed trading record, or investment
+performance result is claimed. Source calendar completeness is an explicit provider
+assumption with retained query coverage and change detection.
+
+The optional paper-worker container was also executed against temporary SQLite
+inside a network-disabled, read-only-rootfs container. It ran as UID/GID 10001,
+without Docker or market/model credentials, recorded `data_blocked` with
+`FEED_UNCONFIGURED`, and produced zero ledger events/observations. Read-only mode
+exited before creating its test database. The disposable container and temporary
+image were removed. Compose configuration validation passed without exposing secrets.

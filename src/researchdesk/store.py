@@ -23,6 +23,7 @@ from researchdesk.db import (
     CaseRow,
     EventRow,
     LedgerRow,
+    PaperControlRow,
     SystemRow,
     TaskRow,
     ToolRow,
@@ -770,7 +771,12 @@ class Store:
             ]
 
     def ledger_transaction(
-        self, idempotency_key, make_events, account_id="paper-main", request=None, case_id=None
+        self,
+        idempotency_key,
+        make_events,
+        account_id="paper-main",
+        request=None,
+        case_id=None,
     ):
         """Serialize admission+event commit; the callback is deterministic, no I/O.
 
@@ -780,6 +786,18 @@ class Store:
         with self.transaction() as s:
             if case_id and self._case_lock(s, case_id).status == "cancelled":
                 raise DomainError("CANCELLED", "The originating research case was cancelled.", 409)
+            if (request or {}).get("action") in {"reserve", "fill"}:
+                control = s.scalar(
+                    select(PaperControlRow)
+                    .where(PaperControlRow.id == account_id)
+                    .with_for_update()
+                )
+                if control and control.version > 0:
+                    raise DomainError(
+                        "MANAGED_ACCOUNT",
+                        "This account is controlled by the paper operations worker.",
+                        409,
+                    )
             from sqlalchemy.dialects.postgresql import insert as pg_insert
             from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 

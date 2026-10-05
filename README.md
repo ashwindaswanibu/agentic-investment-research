@@ -132,8 +132,15 @@ efficacy nor investment alpha follows merely from a successful tool call.
 Paper orders require an accepted version-specific experiment, fresh attributable
 quotes, available cash or shares, and exposure limits. Decimal accounting retains
 reservations and partial fills in a replayable ledger. Missing marks produce an
-unavailable valuation, never a zero price. The operator supplies quotes;
-automated broker/data-feed integration is not implemented.
+unavailable valuation, never a zero price. A separate paper worker reads Alpaca
+quotes and the official session calendar, then consumes reviewed intents within
+an explicitly activated, versioned mandate. Halt/exit-only controls cancel pending
+orders without liquidating holdings. Closing-window P&L retains missing baselines
+as gaps. This is a local quote-driven equity simulation, not broker execution;
+authenticated feed validation remains a separate integration gate.
+
+The Operations page deliberately starts without risk defaults or an active mandate.
+See [paper operations](docs/paper-operations.md) for semantics and current limits.
 
 ## Verification
 
@@ -159,11 +166,15 @@ labelled and cannot authorize orders. Python versions are recorded in
 
 ## Design and deployment
 
+- [Staged engineering roadmap and acceptance gates](docs/engineering-roadmap.md)
+- [Options engine comparison decision](docs/decisions/0002-options-engine-comparison.md)
+- [Paper operations](docs/paper-operations.md)
 - [Architecture](docs/architecture.md)
 - [Operations](docs/operations.md)
 - [Security boundaries](docs/security.md)
 - [Implementation contracts](docs/implementation-contract.md)
 - [Research quality and specialist development](docs/research-quality.md)
+- [M1 research evaluation protocol](docs/research-evaluation-protocol.md)
 - [Local verification record](docs/verification.md)
 
 Credentials, local research, acquired market datasets, caches, and account state

@@ -1,5 +1,6 @@
 "use client";
-import { RefreshCw, ShieldCheck, Wallet } from "lucide-react";
+import Link from "next/link";
+import { RefreshCw, Settings2, ShieldCheck, Wallet } from "lucide-react";
 import { parsePortfolio } from "@/lib/contracts";
 import { useResource } from "@/lib/use-resource";
 import { dateTime, label, money, scalar } from "@/lib/format";
@@ -19,13 +20,19 @@ export function PortfolioScreen() {
             them.
           </p>
         </div>
-        <button
-          className="button button-secondary"
-          onClick={() => void portfolio.refresh()}
-        >
-          <RefreshCw size={15} />
-          Refresh
-        </button>
+        <div className="page-heading-actions">
+          <Link href="/operations" className="button button-secondary">
+            <Settings2 size={15} />
+            Operations
+          </Link>
+          <button
+            className="button button-secondary"
+            onClick={() => void portfolio.refresh()}
+          >
+            <RefreshCw size={15} />
+            Refresh
+          </button>
+        </div>
       </div>
       <div className="paper-notice">
         <ShieldCheck size={18} />

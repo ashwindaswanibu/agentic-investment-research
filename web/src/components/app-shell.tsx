@@ -52,6 +52,7 @@ const nav = [
   { href: "/experiments", label: "Experiments", icon: FlaskConical },
   { href: "/library", label: "Library", icon: BookOpen },
   { href: "/portfolio", label: "Paper portfolio", icon: Wallet },
+  { href: "/operations", label: "Paper operations", icon: Settings2 },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

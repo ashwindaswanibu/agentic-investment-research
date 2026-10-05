@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     provider: Literal["disabled", "openai", "claude_cli"] = "disabled"
     model: str = ""
     openai_api_key: SecretStr = SecretStr("")
+    alpaca_api_key: SecretStr = SecretStr("")
+    alpaca_secret_key: SecretStr = SecretStr("")
+    alpaca_feed: Literal["iex", "sip"] = "iex"
     operator_token: SecretStr = SecretStr("")
     read_only: bool = False
     claude_binary: str = "claude"
