@@ -86,7 +86,7 @@ It reconciles recorded metrics, compares baselines and exposure, and identifies
 missing validation. It does not restrict exploratory strategy ideas or establish
 predictive edge. The generated architecture map covers prompts, roles and tools.
 
-**Now: qualify options-chain ingestion and contract validation.** The bounded
+**Options-data checkpoint:** The bounded
 Tradier sandbox adapter, saved expiration/chain tools, operator CLI, validation
 tests and chain inspector are implemented. Preserve original quote times and
 receipt times; delayed observations cannot enter the existing execution path.
@@ -96,6 +96,14 @@ substitute for an actual provider run. Ashwin confirmed the token is unavailable
 for now and asked development to continue independently. Keep authenticated
 qualification pending; offline implementation can proceed, but options
 selection or lifecycle tests must not be represented as validated market use.
+
+**Hypothesis-to-instrument comparison checkpoint:** The
+`compare_instruments` tool binds saved hypotheses, chains and scenario evidence
+to conditional stock/options/cash comparisons. It retains fees, unused capital,
+cost stress, unavailable alternatives and exact source versions. It is implemented
+and locally verified across the backend, production build and browser. See
+[comparison verification](research/instrument-comparison.md).
+This is not an options execution engine or a measured forecasting result.
 
 **Data budget decision, 2026-10-05:** start with free APIs. Revisit paid data as
 research evidence and confidence improve; do not purchase a subscription now.
@@ -117,8 +125,8 @@ gates, but does not authorize developing all components concurrently.
 
 ## Queued: domain-specific prompts and evaluation
 
-Added 2026-10-05 at Ashwin's request. Todo only; leave options-chain ingestion as
-the active deliverable. Refine prompts deliberately for each task, with relevant
+Added 2026-10-05 at Ashwin's request. Todo only; keep options research integration
+as the current focus. Refine prompts deliberately for each task, with relevant
 domain methods and evidence, rather than relying on an expert role label.
 
 - [ ] Audit the coordinator, researcher, coder, reviewer and dynamic specialist

@@ -30,6 +30,9 @@ npm run build
 npm start
 ```
 
+Static-generation builds use two workers to limit local memory pressure. A build
+that fails for disk space is incomplete even if compilation and TypeScript pass.
+
 Tests cover API response validation, structured tool output, rejected reviews,
 metric units, unavailable valuations, duplicate-submit prevention, read-only UI,
 source-link handling, authentication forwarding, cross-origin rejection, and

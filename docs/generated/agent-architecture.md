@@ -39,6 +39,7 @@ flowchart LR
  role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_activate_specialist["activate_specialist"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
+ role --> tool_compare_instruments["compare_instruments"]
  role --> tool_delegate_task["delegate_task"]
  role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
@@ -65,6 +66,7 @@ flowchart LR
  role --> tool_acquire_market_data["acquire_market_data"]
  role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
+ role --> tool_compare_instruments["compare_instruments"]
  role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
  role --> tool_fetch_evidence["fetch_evidence"]
@@ -89,6 +91,7 @@ flowchart LR
  role --> tool_acquire_market_data["acquire_market_data"]
  role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
+ role --> tool_compare_instruments["compare_instruments"]
  role --> tool_define_research_tool["define_research_tool"]
  role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
@@ -113,6 +116,7 @@ flowchart LR
  role --> tool_acquire_market_data["acquire_market_data"]
  role --> tool_acquire_options_chain["acquire_options_chain"]
  role --> tool_compare_binary_rates["compare_binary_rates"]
+ role --> tool_compare_instruments["compare_instruments"]
  role --> tool_define_research_tool_tests["define_research_tool_tests"]
  role --> tool_discover_options_expirations["discover_options_expirations"]
  role --> tool_evaluate_scenarios["evaluate_scenarios"]
@@ -135,6 +139,7 @@ flowchart LR
 | `acquire_options_chain` | artifact | Retain one underlying/expiration chain from Tradier's 15-minute-delayed sandbox for a stated research purpose. Choose expiry from the research horizon, not automatically the nearest date. Optional source_artifact_ids link the case's hypothesis/evidence. Bid/ask market times and receipt time remain distinct; missing values and validation issues are explicit. Research evidence only: cannot authorize an order or backtest fill, and delayed prices cannot fill a newer decision. Returns a compact receipt; inspect contract rows using inspect_source at /contracts or read_artifact. A refresh is a new artifact. |
 | `activate_specialist` | artifact | Activate an exact specialist specification accepted by an independent reviewer task. Activation is research-only; review does not prove empirical quality. Use its artifact ID as delegate_task.specialist_id for a researcher task. Every version needs its own review. |
 | `compare_binary_rates` | read | Calculate clinical event-rate intervals and risk differences; never infers causal attribution. |
+| `compare_instruments` | artifact | Save a hypothesis-linked comparison of cash, stock and nominated long options/debit spreads under one capital budget and shared expiration scenarios. Resolve option prices from a saved chain's asks/bids; do not copy or override them. Supply explicit fees, cash return, price stress, standard-contract assumptions and scenario rationale with sources. A prior-session stock dataset close with an explicit share-basis assumption, or a visibly assumed price, may serve as the stock reference. Horizon must equal expiry; cutoff must follow source retention. Specify whole quantities or omit them for the maximum affordable amount; each alternative uses its own budget with unused cash carried. Keeps unavailable candidates and same-quantity adverse costs. Probabilities are supplied assumptions, not inferred odds; report does not select a winner, establish synchronized prices, simulate fills or authorize orders. Inspect the saved report with read_artifact, then revise assumptions or collect missing evidence. |
 | `define_research_tool` | artifact | Define a reusable analysis tool from a coder's immutable run(payload) artifact. Declare scalar inputs, purpose and limitations; qualification is still required. Returns a compact receipt; read_artifact inspects full content. |
 | `define_research_tool_tests` | artifact | Independently specify 2–8 distinct input/expected-JSON examples for exact tool/code hashes. These assert functionality, not scientific validity. Returns a compact receipt; read_artifact inspects full content. |
 | `delegate_task` | task | Delegate a bounded task to a specialist. The parent yields until its delegated tasks finish, then receives their results and artifact IDs. Optional specialist_id pins a reviewed activation for a researcher; ordinary input artifacts must belong to this case. Profile prose cannot grant tool permissions. |
@@ -270,4 +275,4 @@ SHA-256 values bind this map to its prompt/registry implementation. The drift te
 - `agents/runtime.py`: `1a5f0968521cbce1cf9d0b664dc9612034e61f0134bd1554936421ed8c4d61ff`
 - `agents/providers.py`: `d43ccf112f07ce0a8fc734026811eee91947695d5b21182183dc12f405462c9c`
 - `agents/specialists.py`: `c62ba4dfdac79fd77f18d00d3ba9765be94357414795236b32f52a8238aa87a4`
-- `domain.py`: `ae9e8cbf35c60b4c590aea197ee09d72f0933b766b30a6013850f2a6690bea62`
+- `domain.py`: `86c2eab3d57b0b1aa84436b2d86316d43f2634e2e35dd04e78a2ebd025e5b309`

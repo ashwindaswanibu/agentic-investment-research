@@ -123,6 +123,31 @@ existing case and write access. A new command captures a new observation; it doe
 not replace old evidence. See [options data and verification](docs/research/options-data.md)
 for timing, contract/size limitations, setup and the explicitly synthetic UI fixture.
 
+## Compare ways to express a thesis
+
+The `compare_instruments` agent tool saves a comparison linked to a hypothesis,
+one retained options chain and a shared expiration scenario grid. It derives option
+costs from the saved asks/bids, compares cash and a stated stock reference, includes
+entry fees and unused cash, and preserves unavailable alternatives. Quantities can
+be specified or calculated as the maximum affordable whole amount. Adverse entry
+costs keep the same quantity and expose funding shortfalls.
+
+Probabilities, contract terms, stock share-basis compatibility and cash return are
+explicit calculation assumptions. This is conditional research arithmetic, not an
+options backtest, execution simulator or instrument recommendation. The inspector
+shows capital, conditional outcomes, cost sensitivity and exact input versions.
+See [design and acceptance criteria](docs/decisions/0006-instrument-comparison.md).
+
+An offline walkthrough creates a clearly labeled synthetic case:
+
+```sh
+python examples/instrument_comparison_verification.py \
+  --database-url sqlite:///./data/researchdesk.db
+```
+
+It demonstrates why an assumed bullish outcome need not cover the premium paid
+for an option. Its TEST prices and probabilities are invented, not market evidence.
+
 ## Inspect a real computation without a model key
 
 ```sh

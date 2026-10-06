@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  Columns3,
   Code2,
   Database,
   FileText,
@@ -35,12 +36,14 @@ import {
 import { ResearchArtifactContent } from "./research-artifacts";
 import { StrategyAssessment } from "./strategy-assessment";
 import { OptionsChain } from "./options-chain";
+import { InstrumentComparison } from "./instrument-comparison";
 
 export const artifactIcons: Partial<Record<string, LucideIcon>> = {
   evidence: FileText,
   dataset: Database,
   options_chain: Database,
   options_expirations: Database,
+  instrument_comparison: Columns3,
   code: Code2,
   experiment: FlaskConical,
   strategy_assessment: ShieldCheck,
@@ -407,6 +410,8 @@ export function ReviewContent({ content }: { content: Json }) {
   );
 }
 export function ArtifactContent({ artifact }: { artifact: Artifact }) {
+  if (artifact.kind === "instrument_comparison")
+    return <InstrumentComparison key={artifact.id} artifact={artifact} />;
   if (artifact.kind === "options_chain")
     return <OptionsChain key={artifact.id} artifact={artifact} />;
   if (artifact.kind === "strategy_assessment")
@@ -503,11 +508,13 @@ export function ArtifactModal({
                 {artifact.task_id ||
                   (artifact.kind === "strategy_assessment"
                     ? "System assessment"
-                    : ["options_chain", "options_expirations"].includes(
-                          artifact.kind,
-                        )
-                      ? "Operator acquisition"
-                      : "Uploaded artifact")}
+                    : artifact.kind === "instrument_comparison"
+                      ? "Operator comparison"
+                      : ["options_chain", "options_expirations"].includes(
+                            artifact.kind,
+                          )
+                        ? "Operator acquisition"
+                        : "Uploaded artifact")}
               </dd>
             </div>
           </dl>

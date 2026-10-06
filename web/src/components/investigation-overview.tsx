@@ -76,6 +76,7 @@ export function investigationReading(data: CaseDetail) {
       [
         "experiment",
         "strategy_assessment",
+        "instrument_comparison",
         "research_tool_result",
         "code",
         "review",

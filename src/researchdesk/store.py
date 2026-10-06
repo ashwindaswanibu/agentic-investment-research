@@ -39,6 +39,7 @@ KINDS = {
     "dataset",
     "options_chain",
     "options_expirations",
+    "instrument_comparison",
     "code",
     "experiment",
     "strategy_assessment",

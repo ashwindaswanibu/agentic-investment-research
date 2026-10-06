@@ -231,6 +231,21 @@ def _artifact_summary(artifact):
             }.items()
             if value is not None
         }
+    if kind == "instrument_comparison":
+        rows = content.get("candidates", [])
+        return {
+            "underlying": content.get("underlying"),
+            "expiration": content.get("expiration"),
+            "capital": content.get("capital"),
+            "currency": content.get("currency"),
+            "information_cutoff": content.get("information_cutoff"),
+            "candidate_count": len(rows),
+            "unavailable_count": sum(row.get("status") == "unavailable" for row in rows),
+            "hypothesis_id": content.get("hypothesis", {}).get("id"),
+            "execution_eligible": False,
+            "synthetic": content.get("synthetic", False),
+            "scope": "Conditional scenarios and supplied probabilities; not forecasts or fills.",
+        }
     if kind == "experiment":
         return {
             "status": content.get("status"),
@@ -839,6 +854,7 @@ class ResearchTools:
             registry.register(name, description, schema, roles, handler, side_effect=effect)
         from researchdesk.agents.specialists import register_specialists
         from researchdesk.generated_tools import register_generated_tools
+        from researchdesk.instrument_workflow import register_instrument_tools
         from researchdesk.options_workflow import register_options_tools
         from researchdesk.quality_workflow import register_quality_tools
 
@@ -846,4 +862,5 @@ class ResearchTools:
         register_generated_tools(registry, self)
         register_specialists(registry, self)
         register_options_tools(registry, self)
+        register_instrument_tools(registry, self)
         return registry

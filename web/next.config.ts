@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // Bound static-generation workers on the local research host.
+  experimental: { cpus: 2 },
   async headers() {
     return [
       {
