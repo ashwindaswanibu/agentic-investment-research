@@ -112,7 +112,10 @@ now includes public scopes, private source projections, a deterministic baseline
 protected comparisons and field-level inspection. All 38 declared real-source
 fields were reproduced by deterministic copying; deliberate count errors were
 isolated. This verifies the instrument, not agent research quality. Independent
-source/key review and authenticated model comparisons remain unfinished.
+automated source/key review subsequently checked all 38 fields; v2 makes enum
+lookups explicit and enforces the promised count length. Its separate audit receipt
+does not establish expert adjudication. Authenticated model comparisons remain
+unfinished; see the [updated checkpoint](research/mechanical-evaluation.md#independent-review-and-explicit-normalization-v2).
 [ADR 0004](decisions/0004-benchmark-harness.md) also requires an Inspect compatibility
 spike before growing custom evaluation scheduling or dashboards. The
 [executed serial spike](decisions/inspect-adapter-spike.md) retained six synthetic

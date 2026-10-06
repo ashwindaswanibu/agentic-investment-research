@@ -70,9 +70,12 @@ new basis; writing quality and sunk engineering effort are not reasons to keep i
 
 ## One active deliverable
 
-The guided mechanical evaluation checkpoint is implemented and locally verified;
-independent source/key review is still pending. Do not expand that infrastructure
-while the product's actual research value remains untested.
+The guided mechanical evaluation checkpoint is implemented and locally verified.
+Independent automated source/key review checked all 38 retained fields and found
+two normalization-contract discrepancies, now corrected in a new v2 package; see
+[the review and verification record](research/mechanical-evaluation.md#independent-review-and-explicit-normalization-v2).
+Actual model comparisons and substantive research quality remain untested. Do not
+expand evaluation infrastructure beyond resolving demonstrated failures.
 
 The investigation overview is implemented and locally verified; see its
 [verification record](research/investigation-overview.md). Findings, open
@@ -104,6 +107,12 @@ cost stress, unavailable alternatives and exact source versions. It is implement
 and locally verified across the backend, production build and browser. See
 [comparison verification](research/instrument-comparison.md).
 This is not an options execution engine or a measured forecasting result.
+
+**Next research dependency:** qualify an actual supported model provider and freeze
+the bounded development-pilot protocol before running candidates. Existing Codex
+authentication was inspected, but a version-specific isolated provider boundary
+was not established; see [ADR 0007](decisions/0007-model-provider-isolation.md).
+Do not substitute a manual assistant-written dossier for a recorded application run.
 
 **Data budget decision, 2026-10-05:** start with free APIs. Revisit paid data as
 research evidence and confidence improve; do not purchase a subscription now.

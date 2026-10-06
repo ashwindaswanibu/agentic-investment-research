@@ -43,7 +43,9 @@ ContextKind = Literal[
 ]
 ObservationKind = Literal["design", "population_count", "endpoint", "availability"]
 DesignScope = Literal["trial_assignment", "analysis_comparison"]
-Normalization = Literal["identity", "canonical_digit_string", "lowercase_enum", "nfc_whitespace"]
+Normalization = Literal[
+    "identity", "canonical_digit_string", "lowercase_enum", "enum_lookup", "nfc_whitespace"
+]
 FieldName = Literal[
     "study_type",
     "allocation",
@@ -155,6 +157,11 @@ class ScopeObservation(ScopedContract):
         return self
 
 
+class EnumMapping(ScopedContract):
+    source_token: Annotated[ExactTextValue, StringConstraints(min_length=1, max_length=200)]
+    value: Annotated[ExactTextValue, StringConstraints(min_length=1, max_length=200)]
+
+
 class ScopedField(ScopedContract):
     field_id: Identifier
     observation_id: Identifier
@@ -169,9 +176,28 @@ class ScopedField(ScopedContract):
         description="Candidate-visible source normalization declared before reference binding. "
         "This rule does not disclose an expected value or state.",
     )
+    enum_map: tuple[EnumMapping, ...] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+        exclude_if=lambda value: value is None,
+        description="Complete field-specific source-token lookup for enum_lookup. "
+        "Exact, case-sensitive tokens; not a declaration of the observed answer. "
+        "Omitted for legacy scopes so their frozen hashes remain unchanged.",
+    )
     severity: Literal["data_integrity", "ordinary"] = Field(
         description="Declared software/data-integrity severity, not clinical error severity."
     )
+
+    @model_validator(mode="after")
+    def declared_enum_lookup(self):
+        if self.normalization == "enum_lookup":
+            if not self.enum_map:
+                raise ValueError("enum_lookup requires a public enum_map")
+            _unique(tuple(item.source_token for item in self.enum_map), "Enum source tokens")
+        elif self.enum_map is not None:
+            raise ValueError("Only enum_lookup can declare enum_map")
+        return self
 
 
 class MechanicalScope(ScopedContract):
@@ -256,7 +282,7 @@ class PresentMechanicalFieldReference(ScopedContract):
         if self.normalization == "canonical_digit_string":
             if type(self.expected_value) is not int or self.expected_value < 0:
                 raise ValueError("canonical_digit_string requires a nonnegative strict integer")
-        elif self.normalization in {"lowercase_enum", "nfc_whitespace"}:
+        elif self.normalization in {"lowercase_enum", "enum_lookup", "nfc_whitespace"}:
             if type(self.expected_value) is not str:
                 raise ValueError(f"{self.normalization} requires a string")
         return self

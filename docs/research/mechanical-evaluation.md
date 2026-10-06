@@ -1,7 +1,7 @@
 # Guided extraction: a bounded measurement prerequisite
 
-Updated 2026-10-05. Engineering verification only; independent reference review
-and actual model comparisons remain pending.
+Updated 2026-10-05. Engineering verification only. A separate independent automated
+source review is now recorded below; actual model comparisons remain pending.
 
 ## Why this belongs in the product
 
@@ -41,9 +41,10 @@ are in the [source inventory](mechanical-scope-inventory.md).
   unchanged when scopes are absent.
 
 Reference records are automated source projections, not expert-adjudicated gold.
-The author had prior source familiarity. The review-agent interruption left
-independent package/integration review unfinished; reviewers remain empty. No
-benchmark protocol or candidate optimization was performed on these references.
+The author had prior source familiarity. The original package's authoring records
+remain unchanged, including empty reviewer lists. A later review is retained as a
+separate receipt bound to exact package and source versions. No benchmark protocol
+or candidate optimization was performed on these references.
 
 ## Acceptance evidence and reproducibility
 
@@ -101,10 +102,10 @@ bindings without exposing the expected answers.
 
 This checkpoint ends at a working baseline, a verified paired comparison and a
 readable report. Do not add more scoring abstractions without a demonstrated
-failure in an actual workflow. Before using these references for a candidate
-comparison, finish independent source/key review and freeze the effective
-protocol, model, budgets and implementation. Changed references require a new
-development version.
+failure in an actual workflow. The source/key review described below addresses
+the bounded factual reference gate. Before a candidate comparison, freeze the
+effective protocol, model, budgets and implementation. Changed references require
+a new development version.
 
 Return next to one authenticated end-to-end research run: evidence triggers a
 capability gap, specialists collaborate on a useful tool, the tool is challenged,
@@ -112,3 +113,58 @@ and the final dossier is inspected against competing evidence. Guided extraction
 is one diagnostic within that run. Broader claim/reconciliation review and a
 budget-matched generalist comparison are still necessary. The current stage does
 not promote autonomous trading, options admission or a resume performance claim.
+
+## Independent review and explicit normalization, v2
+
+A separate reviewer checked all 38 expected fields, 13 source contexts and five
+outcome-local group/endpoint bindings against the retained source objects, without
+using candidate dossiers or importing the projection/comparator. It found no wrong
+labels or bindings. Reading surrounding registry records and publication abstracts
+also confirmed why source-specific enrollment, analysis populations and endpoint
+contexts must stay separate. This is automated engineering review with prior source
+exposure, not a blinded evaluation or a human clinical judgment.
+
+The review exposed two implementation/contract discrepancies. V2 now serializes
+complete field-specific `enum_map` entries for `enum_lookup`, and rejects source
+tokens not in that exact mapping. The deterministic baseline and reference scorer
+both enforce the declared 20-digit canonical-count limit. Generic `lowercase_enum`
+remains readable for legacy packages but is not authored or admitted by the v2
+auditor. Absent new fields are omitted from serialization: the three original
+scope and reference hashes were reloaded and verified unchanged.
+
+The new package is `artifacts/mechanical-reference-package-v2-20261005/`, digest
+`dd8b7ff8e22ede3e3e5315ae264d30839600d82e5ae4f3de5ad716824ab22a74`.
+Its recorded values and context identities remain unchanged; six enum fields have
+explicit conversion contracts. The separate
+[stdlib auditor](../../examples/audit_mechanical_reference_package.py) checks the
+retained package without importing application extraction code. It produces a
+new digest-bound receipt, never changes the package, and refuses to overwrite a
+receipt. The executable checks source agreement; it does not adjudicate publication
+prose or certify public authenticity or historical availability.
+
+The successful receipt is
+`artifacts/mechanical-reference-package-v2-audit-20261005.json`, SHA-256
+`160c4ac90d50b1428631f2c81be33ff0a82b0e1c3585718fa79e75a9b5c422a6`.
+It binds all 38 fields, 13 contexts, five group/endpoint bindings, six sources and
+15 blobs. The 15 auditor tests include self-consistent wrong mappings, changed
+counts, wrong groups, invalid absence proofs and refusal to overwrite a receipt.
+
+```sh
+.venv/bin/python examples/build_mechanical_reference_package.py --output-dir artifacts/NEW-PACKAGE
+.venv/bin/python examples/audit_mechanical_reference_package.py \
+  --package artifacts/NEW-PACKAGE --output artifacts/NEW-AUDIT.json
+.venv/bin/python examples/mechanical_evaluation_verification.py \
+  --package artifacts/NEW-PACKAGE --output artifacts/NEW-VERIFICATION
+```
+
+The v2 workflow verification again reproduced 24/24, 8/8 and 6/6 deterministic
+matches and isolated each deliberate one-field count error. Its output at
+`artifacts/mechanical-evaluation-verification-v2-20261005/` predates the separate
+audit receipt, so its saved review status correctly remains pending at that run.
+No model calls were made. This closes factual package checking only; genuine agent
+use, substantive claim review and a budget-matched generalist comparison remain.
+
+After these changes the full Python suite passed **1,235 tests**, with 19
+environment-dependent skips and the existing Starlette/httpx deprecation warning.
+Ruff and the diff whitespace check passed. There were no frontend changes in this
+checkpoint; the earlier browser checks were not repeated.

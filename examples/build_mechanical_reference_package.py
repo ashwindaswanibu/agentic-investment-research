@@ -48,7 +48,7 @@ CASE_PLANS = (
     ("development-crispr-ctx112", "NCT05643742", "ctg-NCT05643742-current-20261005", (0, 1)),
     ("development-northwest-dcvax-l", "NCT00045968", "ctg-NCT00045968-current-20261005", (0,)),
 )
-VERSION = "2026-10-05.mechanical.v1"
+VERSION = "2026-10-05.mechanical.v2"
 AUTHORING = {
     "kind": "automated",
     "method": "direct_registry_field_projection",
@@ -164,7 +164,7 @@ class CaseProjection:
             if re.fullmatch(r"0|[1-9][0-9]*", value) is None or len(value) > 20:
                 raise ValueError(f"Expected bounded canonical ASCII digit-string count at {path}")
             expected = int(value)
-        elif normalization == "lowercase_enum":
+        elif normalization == "enum_lookup":
             if not allowed_tokens or value not in allowed_tokens:
                 raise ValueError(f"Unexpected source enum token at {path}")
             expected = value.lower()
@@ -179,9 +179,10 @@ class CaseProjection:
                 " Preserve the raw citation; convert canonical ASCII decimal digits "
                 "(0 or a nonzero leading digit, at most 20 digits) to integer."
             )
-        elif normalization == "lowercase_enum":
+        elif normalization == "enum_lookup":
             question += (
-                " Use the declared lowercase source enum token, retaining its source citation."
+                " Use only the exact source-token to value mapping in enum_map, "
+                "retaining the original source citation. Unknown tokens remain unresolved."
             )
         else:
             question += " Preserve the exact scalar value and source type."
@@ -194,6 +195,16 @@ class CaseProjection:
                 "question": question,
                 "severity": severity,
                 "normalization": normalization,
+                **(
+                    {
+                        "enum_map": [
+                            {"source_token": token, "value": token.lower()}
+                            for token in sorted(allowed_tokens)
+                        ]
+                    }
+                    if normalization == "enum_lookup"
+                    else {}
+                ),
             }
         )
         self.references.append(
@@ -254,7 +265,7 @@ class CaseProjection:
                 "reported_role",
                 path + "/type",
                 raw_type=str,
-                normalization="lowercase_enum",
+                normalization="enum_lookup",
                 allowed_tokens={"PRIMARY", "SECONDARY"},
             )
         return context_id, observation_id
@@ -354,7 +365,7 @@ def derive_references(manifest, contents):
             "reported_status",
             enrollment + "/type",
             raw_type=str,
-            normalization="lowercase_enum",
+            normalization="enum_lookup",
             allowed_tokens={"ACTUAL", "ESTIMATED"},
         )
         for index in endpoint_indexes:

@@ -491,13 +491,33 @@ def test_unrelated_bad_extra_and_reordering_do_not_change_scoped_score(fixture):
     assert report["candidate_validation"]["schema_valid"] is False
 
 
-@pytest.mark.parametrize("value", ["07", " 7", "7.0", "+7", "٧", "７", "7\n"])
+@pytest.mark.parametrize("value", ["07", " 7", "7.0", "+7", "٧", "７", "7\n", "1" * 21])
 def test_reference_integer_string_rule_is_canonical_ascii(fixture, value):
     fixture[3]["stable-source"]["content"]["record"]["outcomes"][0]["denoms"][0]["counts"][0][
         "value"
     ] = value
     rehash(fixture)
     with pytest.raises(quality.ReferenceValidationError, match="noncanonical_integer_string"):
+        score(fixture)
+
+
+def test_public_enum_lookup_binds_reference_without_accepting_undeclared_tokens(fixture):
+    field = next(f for f in fixture[1]["fields"] if f["field_id"] == "enrollment.reported_status")
+    rule = next(f for f in fixture[2]["fields"] if f["field_id"] == field["field_id"])
+    field.update(
+        normalization="enum_lookup",
+        enum_map=[
+            {"source_token": "ACTUAL", "value": "actual"},
+            {"source_token": "ESTIMATED", "value": "estimated"},
+        ],
+    )
+    rule["normalization"] = "enum_lookup"
+    fixture[2]["scope_sha256"] = MechanicalScope.model_validate(fixture[1]).sha256
+    assert outcomes(score(fixture))[field["field_id"]] == "matched"
+    # A different token with the same lowercase spelling is not an approved mapping.
+    fixture[3]["stable-source"]["content"]["record"]["enrollment"]["status"] = "Actual"
+    rehash(fixture)
+    with pytest.raises(quality.ReferenceValidationError, match="undeclared_enum_token"):
         score(fixture)
 
 

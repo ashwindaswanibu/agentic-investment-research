@@ -68,7 +68,7 @@ def _same(left, right):
     return type(left) is type(right) and left == right
 
 
-def _project(value, operation):
+def _project(value, operation, enum_map=None):
     if operation == "identity":
         if value is not None and type(value) not in (str, int, bool):
             raise ReferenceValidationError("reference_scalar_type")
@@ -76,7 +76,7 @@ def _project(value, operation):
     if type(value) is not str:
         raise ReferenceValidationError("normalization_source_type")
     if operation == "canonical_digit_string":
-        if re.fullmatch(r"0|[1-9][0-9]*", value) is None:
+        if len(value) > 20 or re.fullmatch(r"0|[1-9][0-9]*", value) is None:
             raise ReferenceValidationError("noncanonical_integer_string")
         try:
             return int(value)
@@ -84,6 +84,11 @@ def _project(value, operation):
             raise ReferenceValidationError("integer_string_limit") from exc
     if operation == "lowercase_enum":
         return value.lower()
+    if operation == "enum_lookup":
+        for entry in enum_map or ():
+            if value == entry.source_token:
+                return entry.value
+        raise ReferenceValidationError("undeclared_enum_token")
     if operation == "nfc_whitespace":
         return _normalize(value)
     raise ReferenceValidationError("unknown_normalization")
@@ -186,7 +191,7 @@ def _prepare(scope, reference, sources):
             if not isinstance(selected, dict) or rule.missing_key in selected:
                 raise ReferenceValidationError("missing_key_not_proven")
         else:
-            derived = _project(selected, rule.normalization)
+            derived = _project(selected, rule.normalization, field.enum_map)
             if not _same(derived, rule.expected_value):
                 raise ReferenceValidationError("expected_value_not_derived")
             try:

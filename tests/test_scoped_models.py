@@ -259,6 +259,27 @@ def test_unknown_public_normalization_is_rejected(scope_data):
         MechanicalScope.model_validate(scope_data)
 
 
+def test_enum_lookup_requires_unique_explicit_public_mapping_and_preserves_legacy_hashes(
+    scope_data,
+):
+    legacy = MechanicalScope.model_validate(scope_data)
+    assert all("enum_map" not in field for field in legacy.model_dump(mode="json")["fields"])
+    field = scope_data["fields"][0]
+    field["normalization"] = "enum_lookup"
+    with pytest.raises(ValidationError, match="requires a public enum_map"):
+        MechanicalScope.model_validate(scope_data)
+    field["enum_map"] = [{"source_token": "ACTUAL", "value": "actual"}]
+    declared = MechanicalScope.model_validate(scope_data)
+    field["enum_map"][0]["value"] = "estimated"
+    assert declared.sha256 != MechanicalScope.model_validate(scope_data).sha256
+    field["enum_map"].append({"source_token": "ACTUAL", "value": "actual"})
+    with pytest.raises(ValidationError, match="Enum source tokens must be unique"):
+        MechanicalScope.model_validate(scope_data)
+    field["normalization"] = "identity"
+    with pytest.raises(ValidationError, match="Only enum_lookup"):
+        MechanicalScope.model_validate(scope_data)
+
+
 @pytest.mark.parametrize("kind", ["design", "endpoint", "availability"])
 def test_group_only_belongs_to_population_count(scope_data, kind):
     observation = scope_data["observations"][0] | {"kind": kind}

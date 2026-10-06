@@ -113,7 +113,7 @@ def _field_adapter(kind, field):
     return TypeAdapter(_MODELS[kind].model_fields[field].annotation)
 
 
-def _normalized(raw, operation):
+def _normalized(raw, operation, enum_map=None):
     if raw is not None and type(raw) not in (str, int, bool):
         raise ValueError("The requested value is not a supported exact scalar.")
     if operation == "identity":
@@ -121,7 +121,7 @@ def _normalized(raw, operation):
     if type(raw) is not str:
         raise ValueError("The declared normalization requires a source string.")
     if operation == "canonical_digit_string":
-        if re.fullmatch(r"0|[1-9][0-9]*", raw) is None:
+        if len(raw) > 20 or re.fullmatch(r"0|[1-9][0-9]*", raw) is None:
             raise ValueError("The source is not a canonical ASCII integer string.")
         try:
             return int(raw)
@@ -129,6 +129,11 @@ def _normalized(raw, operation):
             raise ValueError("The source integer string exceeds the conversion bound.") from error
     if operation == "lowercase_enum":
         return raw.lower()
+    if operation == "enum_lookup":
+        for entry in enum_map or ():
+            if raw == entry.source_token:
+                return entry.value
+        raise ValueError("The source token is absent from the declared public enum lookup.")
     if operation == "nfc_whitespace":
         return _normalize(raw)
     raise ValueError("The public normalization is unsupported.")
@@ -165,7 +170,7 @@ def _project_field(field, observation, source):
                 raise ValueError(
                     "The count's sibling groupId does not match its public group identity."
                 )
-        value = _normalized(raw, field.normalization)
+        value = _normalized(raw, field.normalization, field.enum_map)
         projected = _field_adapter(observation.kind, field.field_name).validate_python(
             {"state": "present", "value": value}, strict=True
         )

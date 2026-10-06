@@ -172,7 +172,11 @@ def _assert_package(output, index):
         ):
             assert forbidden not in public_text
         for field in scope.fields:
-            assert field.normalization in {"identity", "canonical_digit_string", "lowercase_enum"}
+            assert field.normalization in {"identity", "canonical_digit_string", "enum_lookup"}
+            if field.normalization == "enum_lookup":
+                assert field.enum_map is not None
+                assert len(field.enum_map) == 2
+                assert "enum_map" in field.model_dump(mode="json")
         artifacts = {
             source.source_id: {
                 "id": "sha256:" + source.artifact_sha256,

@@ -64,12 +64,31 @@ def test_inexpressible_count_is_unresolved_not_coerced(scoped_fixture, raw):
     assert get_observation(output, "available").available.state == "present"
 
 
-@pytest.mark.parametrize("raw", ["007", "+7", "7.0", " 7", "٧", "7e0"])
+@pytest.mark.parametrize("raw", ["007", "+7", "7.0", " 7", "٧", "7e0", "1" * 21])
 def test_digit_string_normalization_does_not_guess(scoped_fixture, raw):
     source = scoped_fixture[3]["stable-source"]
     source["content"]["record"]["outcomes"][0]["denoms"][0]["counts"][0]["value"] = raw
     rebind_source(scoped_fixture)
     assert get_observation(project(scoped_fixture), "count0").count.state == "unresolved"
+
+
+def test_public_enum_lookup_is_exact_and_not_blanket_case_folding(scoped_fixture):
+    field = next(
+        f for f in scoped_fixture[1]["fields"] if f["field_id"] == "enrollment.reported_status"
+    )
+    field.update(
+        normalization="enum_lookup",
+        enum_map=[
+            {"source_token": "ACTUAL", "value": "actual"},
+            {"source_token": "ESTIMATED", "value": "estimated"},
+        ],
+    )
+    assert get_observation(project(scoped_fixture), "enrollment").reported_status.value == "actual"
+    scoped_fixture[3]["stable-source"]["content"]["record"]["enrollment"]["status"] = "Actual"
+    rebind_source(scoped_fixture)
+    assert (
+        get_observation(project(scoped_fixture), "enrollment").reported_status.state == "unresolved"
+    )
 
 
 def test_wrong_group_does_not_copy_a_plausible_count(scoped_fixture):
