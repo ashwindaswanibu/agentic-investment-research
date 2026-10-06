@@ -115,7 +115,9 @@ idle; the first request after sleep can take about a minute.
 Public HTTPS hosting is still pending. Keep the API behind this frontend, retain
 the dedicated synthetic package, and do not connect an execution worker or
 operator database. [Remote application CI](verification.md#public-repository-and-remote-ci-2026-10-05)
-has passed; the new container qualification is a separate recorded gate.
+has passed, as has the [combined container qualification](verification.md#combined-demo-container-2026-10-05).
+That finite run peaked at 180.02 MiB and reached readiness in 50.72 seconds under
+the restricted CPU quota. An actual Render deployment remains unverified.
 
 ## Why this design
 

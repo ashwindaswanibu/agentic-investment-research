@@ -1,5 +1,49 @@
 # Verification record
 
+## Combined demo container, 2026-10-05
+
+[GitHub Actions run 37408081344](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37408081344)
+passed all four jobs on source commit `1f0303dfe52b1bdb0ca13769a54a647fdfce5f86`.
+The new job built the actual Python/Next image from a fresh Linux amd64 checkout,
+including the synthetic database. The pinned images supplied Python 3.12.15 and
+Node 24.21.0. No local runtime or operator database was copied.
+
+The combined container ran as UID/GID 10001 with a 512 MiB memory limit, no extra
+swap, 0.1 CPU quota, read-only root, 64 MiB temporary storage and no Linux
+capabilities. First proxied API readiness took **50.72 seconds**; cgroup peak memory
+was **188,768,256 bytes (180.02 MiB)**, with no OOM events. These measurements cover
+the declared finite workload on that runner, not a general capacity or latency SLA.
+
+The [retained receipt](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37408081344/artifacts/11388640242)
+records image ID `sha256:0f9fc6057f9d1160af7646927aff0ffc8eadf92bb7fe8ca24d3776f581d50d13`
+and 13 completed checks:
+
+- Both walkthrough pages and case APIs, five forecast records, library search,
+  paper halt state, disabled capabilities and 12 actual JS/CSS assets loaded.
+- API writes returned the backend's `READ_ONLY` error. File permissions rejected
+  write access; the application's immutable SQLite URI allowed reading and refused
+  a CREATE statement. The database hash remained unchanged.
+- Graceful SIGTERM exited within the bound. Killing either the Python API or Next
+  process separately caused the supervisor to stop the container with an error.
+  A malformed manifest failed before frontend startup.
+- The supervisor has 27 new subprocess/health tests. The complete Python job passed
+  1,329 offline tests (three inapplicable parameter cases skipped), plus 11 actual
+  PostgreSQL tests. Frontend and sandbox jobs passed their existing 138 and six tests;
+  dependency audits reported no known vulnerabilities at the time of the run.
+
+Independent review found and corrected a failure-test bug: Next rewrites its
+process title, so the checker now identifies the supervisor's direct children by
+executable. The first container run also exposed a test assumption about SQLite
+WAL error wording. The revised check first proves reading through the application's
+URI and tests filesystem write access separately; protection was not relaxed.
+
+The [Render configuration](../render.yaml) selects free compute and disables
+automatic deployment. The image is qualified for this bounded demo workload;
+**Render account access, hosting billing review and an actual public HTTPS
+deployment remain pending**. CI hardening flags are not claims about Render's
+runtime settings. Real agent research, Tradier authentication, options lifecycle
+qualification and sustained operation remain separate unfinished gates.
+
 ## Public repository and remote CI, 2026-10-05
 
 The source is public at

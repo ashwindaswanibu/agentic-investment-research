@@ -15,7 +15,9 @@ restricted to SEC filings. Trading is entirely paper, with no live broker client
 This is an experimental workbench. [Remote CI](docs/verification.md) verifies
 application, PostgreSQL, sandbox and frontend behavior; authenticated agent
 research quality and investment usefulness remain unmeasured. The interactive
-demo currently runs locally using the recipe below.
+demo currently runs locally using the recipe below. A
+[tested container package](docs/public-demo.md#container-and-hosting) is ready for
+hosting; a public HTTPS demo URL is still pending.
 
 ## Follow the work, not just the answer
 

@@ -1,6 +1,7 @@
 # ADR 0009 — host the existing read-only demonstration
 
-Date: 2026-10-05. Status: implementation and qualification in progress.
+Date: 2026-10-05. Status: implemented; constrained container qualification passed;
+hosting account access and actual HTTPS deployment pending.
 
 ## Job and stopping condition
 
@@ -66,3 +67,7 @@ Read 2026-10-05:
 
 Qualification results belong in the verification record. Do not treat this decision
 or a deployment manifest as evidence that hosting is live.
+The [completed container check](../verification.md#combined-demo-container-2026-10-05)
+passed at 180.02 MiB peak memory and 50.72 seconds to first readiness under the
+declared limits, including failure and shutdown checks. This supports the selected
+free-tier trial; it is not an operating-service qualification.
