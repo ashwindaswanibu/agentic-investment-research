@@ -22,6 +22,12 @@ flowchart TD
  Delegate --> Task
  Handler --> Experiment["Causal simulation and automatic assessment"]
  Experiment --> Record
+ Handler --> Forecast["Immutable forecast before event window"]
+ Forecast --> Record
+ Operator["Write-authorized operator after event window"] --> Resolution["Source-cited outcome and correction history"]
+ Forecast --> Resolution
+ Resolution --> Record
+ Resolution --> Score["Per-record Brier loss against saved baseline"]
 ```
 
 There are four base roles. They share the system prompt; this is not four separate domain experts. A reviewed specialist activation augments a researcher with stored domain instructions and narrows its tool permissions. Only the coordinator delegates. A coder implements tools/strategies; a separate reviewer reviews exact immutable versions. Dynamic instruction text lives in the task and specialist artifacts, not a hard-coded list in this document.
@@ -51,6 +57,7 @@ flowchart LR
  role --> tool_propose_specialist["propose_specialist"]
  role --> tool_read_artifact["read_artifact"]
  role --> tool_record_hypothesis["record_hypothesis"]
+ role --> tool_register_forecast["register_forecast"]
  role --> tool_search_clinical_trials["search_clinical_trials"]
  role --> tool_search_library["search_library"]
  role --> tool_search_pubmed["search_pubmed"]
@@ -76,6 +83,7 @@ flowchart LR
  role --> tool_propose_specialist["propose_specialist"]
  role --> tool_read_artifact["read_artifact"]
  role --> tool_record_hypothesis["record_hypothesis"]
+ role --> tool_register_forecast["register_forecast"]
  role --> tool_search_clinical_trials["search_clinical_trials"]
  role --> tool_search_library["search_library"]
  role --> tool_search_pubmed["search_pubmed"]
@@ -155,6 +163,7 @@ flowchart LR
 | `qualify_research_tool` | artifact | Run every independent example in isolated Docker. All must match exact finite JSON; failed tests never qualify a tool or authorize trading. Returns a compact receipt; read_artifact inspects full content. |
 | `read_artifact` | read | Read an immutable artifact as paginated text (default 12000, maximum 16000 characters). Follow next_read until next_offset is null. JSON content is serialized with sorted keys; offsets match search passages. The hash identifies the complete original content. Use section='metadata' for complete provenance. |
 | `record_hypothesis` | artifact | Register a falsifiable mechanism, prediction, competing explanation and evaluation plan. Link revisions and rejections to the previous immutable hypothesis; keep unsuccessful attempts. Registration does not establish out-of-sample validity. |
+| `register_forecast` | artifact | Register an immutable binary forecast or explicit abstention tied to an exact saved hypothesis ID/hash and 1–10 same-case retained source IDs. Supply future opening and closing timestamps, yes/no/unresolvable rules, resolution source and a fixed baseline probability/rationale. Registration uses server time and must precede the window. It does not prove the event was unknown. Only operators can resolve outcomes after the window closes. Every attempt remains visible; no execution authorization or claim of forecasting skill. Returns a receipt; inspect with read_artifact. |
 | `review_artifact` | artifact | Record an independent verdict bound to an inspected artifact hash and related experiments. Returns a compact receipt; read_artifact inspects full content. |
 | `run_experiment` | artifact | Compute a causal cost-aware backtest or chronological SMA walk-forward; generated Python receives only observed history. Returns a compact receipt; read_artifact inspects full content. |
 | `search_clinical_trials` | artifact | Search ClinicalTrials.gov for study designs, endpoints, and published results. Returns a compact receipt; read_artifact inspects full content. |
@@ -275,4 +284,4 @@ SHA-256 values bind this map to its prompt/registry implementation. The drift te
 - `agents/runtime.py`: `1a5f0968521cbce1cf9d0b664dc9612034e61f0134bd1554936421ed8c4d61ff`
 - `agents/providers.py`: `d43ccf112f07ce0a8fc734026811eee91947695d5b21182183dc12f405462c9c`
 - `agents/specialists.py`: `c62ba4dfdac79fd77f18d00d3ba9765be94357414795236b32f52a8238aa87a4`
-- `domain.py`: `86c2eab3d57b0b1aa84436b2d86316d43f2634e2e35dd04e78a2ebd025e5b309`
+- `domain.py`: `5682346d503397eac14a1cd497585a1b7d199d3e0a0d7cf7fb47fe481a044f14`

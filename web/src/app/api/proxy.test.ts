@@ -8,6 +8,50 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 describe("same-origin backend proxy", () => {
+  it("forwards forecast resolutions and preserves backend correction conflicts", async () => {
+    const body = { outcome: "no", previous_resolution_id: "prior-resolution" };
+    const conflict = {
+      error: {
+        code: "RESOLUTION_CONFLICT",
+        message: "Review the latest resolution.",
+      },
+    };
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(conflict), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const response = await POST(
+      new NextRequest(
+        "http://localhost:3000/api/forecasts/forecast-id/resolutions",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://127.0.0.1:3000",
+            "Idempotency-Key": "resolution-retry-key",
+            Cookie: "session=existing",
+          },
+          body: JSON.stringify(body),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          path: ["forecasts", "forecast-id", "resolutions"],
+        }),
+      },
+    );
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual(conflict);
+    const [url, options] = fetcher.mock.calls[0];
+    expect(String(url)).toBe(
+      "http://127.0.0.1:8010/api/forecasts/forecast-id/resolutions",
+    );
+    expect(JSON.parse(options.body)).toEqual(body);
+    expect(options.headers.get("Idempotency-Key")).toBe("resolution-retry-key");
+    expect(options.headers.get("Cookie")).toBe("session=existing");
+  });
   it("accepts the configured loopback origin even when Next normalizes the request URL to localhost", async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response("{}"));
     vi.stubGlobal("fetch", fetcher);

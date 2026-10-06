@@ -18,6 +18,13 @@ from researchdesk.agents import ProviderConfig, provider_health, register_delega
 from researchdesk.config import Settings
 from researchdesk.domain import Input, ResearchTools
 from researchdesk.errors import DomainError
+from researchdesk.forecast_workflow import (
+    ForecastInput,
+    ResolutionInput,
+    list_forecasts,
+    register_forecast,
+    resolve_forecast,
+)
 from researchdesk.paper import PaperError, Quote
 from researchdesk.paper_operations import (
     ControlInput,
@@ -27,7 +34,7 @@ from researchdesk.paper_operations import (
 )
 from researchdesk.quant import QuantError
 from researchdesk.service import PaperService
-from researchdesk.store import WORKSPACES, Store
+from researchdesk.store import WORKSPACES, Store, content_hash
 
 
 class CaseInput(Input):
@@ -335,6 +342,28 @@ def create_app(settings=None, store=None, research=None):
     @app.post("/api/cases/{case_id}/cancel", dependencies=write)
     def cancel_case(case_id: str):
         return store.cancel_case(case_id)
+
+    @app.get("/api/cases/{case_id}/forecasts", dependencies=read)
+    def forecasts(case_id: str):
+        return list_forecasts(research, case_id)
+
+    @app.post("/api/cases/{case_id}/forecasts", dependencies=write, status_code=201)
+    def create_forecast(case_id: str, body: ForecastInput, key=Depends(request_key)):
+        return register_forecast(
+            research,
+            body,
+            case_id=case_id,
+            key="forecast:" + content_hash({"case_id": case_id, "key": key}),
+        )
+
+    @app.post("/api/forecasts/{forecast_id}/resolutions", dependencies=write, status_code=201)
+    def create_resolution(forecast_id: str, body: ResolutionInput, key=Depends(request_key)):
+        return resolve_forecast(
+            research,
+            forecast_id,
+            body,
+            key="resolution:" + content_hash({"forecast_id": forecast_id, "key": key}),
+        )
 
     @app.get("/api/tasks", dependencies=read)
     def tasks(case_id: str | None = None):

@@ -29,6 +29,7 @@ import { dateTime, duration, isRecord, label, scalar } from "@/lib/format";
 import { useEnvironment } from "./app-shell";
 import { ArtifactCard, ArtifactModal } from "./artifacts";
 import { InvestigationOverview } from "./investigation-overview";
+import { ForecastPanel } from "./forecasts";
 import { EmptyState, ErrorNotice, JsonDetails, Loading, Status } from "./ui";
 
 function useCaseEvents(caseId: string, onChange: () => void) {
@@ -74,7 +75,13 @@ function useCaseEvents(caseId: string, onChange: () => void) {
   return { error, updatedAt };
 }
 
-export function CaseScreen({ caseId }: { caseId: string }) {
+export function CaseScreen({
+  caseId,
+  initialTab = "research",
+}: {
+  caseId: string;
+  initialTab?: "research" | "forecasts";
+}) {
   const detail = useResource(
     `/cases/${encodeURIComponent(caseId)}`,
     parseCaseDetail,
@@ -85,7 +92,7 @@ export function CaseScreen({ caseId }: { caseId: string }) {
   }, [detail.refresh]);
   const events = useCaseEvents(caseId, changed);
   const { capabilities, workspaces, canWrite } = useEnvironment();
-  const [tab, setTab] = useState("research"),
+  const [tab, setTab] = useState<string>(initialTab),
     [selected, setSelected] = useState<Artifact | null>(null),
     [loadingSource, setLoadingSource] = useState<string | null>(null),
     [busy, setBusy] = useState<string | null>(null),
@@ -239,12 +246,14 @@ export function CaseScreen({ caseId }: { caseId: string }) {
         </ErrorNotice>
       )}
       {actionError && <ErrorNotice>{actionError}</ErrorNotice>}
-      {data.status === "draft" && !capabilities?.provider.configured && (
-        <div className="info-notice">
-          Your research brief is saved. Configure a model provider in the server
-          environment to launch this investigation.
-        </div>
-      )}
+      {tab !== "forecasts" &&
+        data.status === "draft" &&
+        !capabilities?.provider.configured && (
+          <div className="info-notice">
+            Your research brief is saved. Configure a model provider in the
+            server environment to launch this investigation.
+          </div>
+        )}
       <div
         className="case-tabs"
         role="tablist"
@@ -253,6 +262,7 @@ export function CaseScreen({ caseId }: { caseId: string }) {
         {[
           { id: "research", label: "Overview" },
           { id: "evidence", label: "Evidence", count: evidence.length },
+          { id: "forecasts", label: "Forecasts" },
           { id: "artifacts", label: "Artifacts", count: data.artifacts.length },
           { id: "activity", label: "Activity", count: data.tool_calls.length },
         ].map((item, index, items) => (
@@ -301,15 +311,41 @@ export function CaseScreen({ caseId }: { caseId: string }) {
       </div>
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === "research" && (
-          <InvestigationOverview
-            data={data}
+          <>
+            {data.artifacts.some(
+              (artifact) => artifact.kind === "forecast",
+            ) && (
+              <div className="info-notice">
+                <span>
+                  This investigation has registered forecasts with fixed event
+                  windows and outcome records.
+                </span>
+                <button
+                  className="text-button"
+                  onClick={() => setTab("forecasts")}
+                >
+                  Review forecasts & outcomes
+                </button>
+              </div>
+            )}
+            <InvestigationOverview
+              data={data}
+              onOpen={openArtifact}
+              onOpenSource={(id) => void openSource(id)}
+              loadingSource={loadingSource}
+              onNavigate={setTab}
+            >
+              <TaskList tasks={data.tasks} calls={data.tool_calls} />
+            </InvestigationOverview>
+          </>
+        )}
+        {tab === "forecasts" && (
+          <ForecastPanel
+            caseId={caseId}
+            artifacts={data.artifacts}
             onOpen={openArtifact}
-            onOpenSource={(id) => void openSource(id)}
-            loadingSource={loadingSource}
-            onNavigate={setTab}
-          >
-            <TaskList tasks={data.tasks} calls={data.tool_calls} />
-          </InvestigationOverview>
+            onChanged={changed}
+          />
         )}
         {tab === "evidence" && (
           <section className="panel">

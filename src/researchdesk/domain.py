@@ -246,6 +246,24 @@ def _artifact_summary(artifact):
             "synthetic": content.get("synthetic", False),
             "scope": "Conditional scenarios and supplied probabilities; not forecasts or fills.",
         }
+    if kind in {"forecast", "forecast_resolution"}:
+        fields = (
+            "question",
+            "status",
+            "probability",
+            "baseline_probability",
+            "registered_at",
+            "opens_at",
+            "closes_at",
+            "outcome",
+            "recorded_at",
+            "revision",
+            "resolver_origin",
+            "execution_eligible",
+            "synthetic",
+            "scope",
+        )
+        return {key: content[key] for key in fields if key in content}
     if kind == "experiment":
         return {
             "status": content.get("status"),
@@ -853,6 +871,7 @@ class ResearchTools:
                 description += " Returns a compact receipt; read_artifact inspects full content."
             registry.register(name, description, schema, roles, handler, side_effect=effect)
         from researchdesk.agents.specialists import register_specialists
+        from researchdesk.forecast_workflow import register_forecast_tools
         from researchdesk.generated_tools import register_generated_tools
         from researchdesk.instrument_workflow import register_instrument_tools
         from researchdesk.options_workflow import register_options_tools
@@ -863,4 +882,5 @@ class ResearchTools:
         register_specialists(registry, self)
         register_options_tools(registry, self)
         register_instrument_tools(registry, self)
+        register_forecast_tools(registry, self)
         return registry

@@ -1,9 +1,17 @@
 import { CaseScreen } from "@/components/case-screen";
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { id } = await params;
-  return <CaseScreen caseId={id} />;
+  const { tab } = await searchParams;
+  return (
+    <CaseScreen
+      caseId={id}
+      initialTab={tab === "forecasts" ? "forecasts" : "research"}
+    />
+  );
 }

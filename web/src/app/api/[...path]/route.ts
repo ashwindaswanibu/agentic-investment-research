@@ -9,6 +9,7 @@ const resources = new Set([
   "cases",
   "tasks",
   "artifacts",
+  "forecasts",
   "experiments",
   "library",
   "events",

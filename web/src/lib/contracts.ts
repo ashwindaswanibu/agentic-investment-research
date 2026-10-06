@@ -23,6 +23,8 @@ export const ARTIFACT_KINDS = [
   "paper_intent",
   "clinical_dossier",
   "hypothesis",
+  "forecast",
+  "forecast_resolution",
   "evaluation_reference",
   "evaluation_report",
   "specialist_spec",

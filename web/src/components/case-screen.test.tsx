@@ -28,6 +28,7 @@ function setup({
   sourceStatus = 200,
   sourceKind = "evidence",
   savedArtifacts = [] as JsonObject[],
+  initialTab = "research" as "research" | "forecasts",
 } = {}) {
   const data = {
     ...caseFixture,
@@ -58,21 +59,25 @@ function setup({
     ],
   };
   const fetcher = vi.fn((url: string, options?: RequestInit) => {
-    const body = url.includes("/events?")
-      ? { items: [], cursor: 0 }
-      : url.includes("/artifacts/")
-        ? sourceStatus === 200
-          ? {
-              ...artifactFixture,
-              id: "shared-source",
-              kind: sourceKind,
-              title: "Shared synthetic evidence",
-              content: { text: "Source text" },
-            }
-          : { error: { message: "Source is unavailable.", code: "NOT_FOUND" } }
-        : options?.method === "POST"
-          ? { ...caseFixture, status: "cancelled" }
-          : data;
+    const body = url.endsWith("/forecasts")
+      ? { items: [] }
+      : url.includes("/events?")
+        ? { items: [], cursor: 0 }
+        : url.includes("/artifacts/")
+          ? sourceStatus === 200
+            ? {
+                ...artifactFixture,
+                id: "shared-source",
+                kind: sourceKind,
+                title: "Shared synthetic evidence",
+                content: { text: "Source text" },
+              }
+            : {
+                error: { message: "Source is unavailable.", code: "NOT_FOUND" },
+              }
+          : options?.method === "POST"
+            ? { ...caseFixture, status: "cancelled" }
+            : data;
     return Promise.resolve(
       new Response(JSON.stringify(body), {
         status: url.includes("/artifacts/") ? sourceStatus : 200,
@@ -80,11 +85,18 @@ function setup({
     );
   });
   vi.stubGlobal("fetch", fetcher);
-  render(<CaseScreen caseId={caseFixture.id} />);
+  render(<CaseScreen caseId={caseFixture.id} initialTab={initialTab} />);
   return fetcher;
 }
 
 describe("investigation interactions", () => {
+  it("opens a shared forecast destination directly instead of hiding it behind Overview", async () => {
+    setup({ initialTab: "forecasts" });
+    expect(
+      await screen.findByRole("tab", { name: "Forecasts" }),
+    ).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByText("No forecasts registered")).toBeVisible();
+  });
   it("counts options evidence consistently and opens operator acquisitions from the Evidence tab", async () => {
     setup({
       savedArtifacts: [

@@ -56,6 +56,8 @@ KINDS = {
     "research_tool_tests",
     "research_tool_qualification",
     "research_tool_result",
+    "forecast",
+    "forecast_resolution",
 }
 # Gold labels and their detailed error reports belong to the operator's evaluator.
 # No model tool, retrieval query or generated program receives these artifacts.
@@ -609,6 +611,97 @@ class Store:
                     "ARTIFACT_CORRUPT", "Artifact content failed integrity verification.", 409
                 )
             return row_dict(row)
+
+    def put_forecast_artifact(
+        self,
+        case_id,
+        kind,
+        request,
+        build,
+        validate_commit,
+        *,
+        idempotency_key,
+        task_id=None,
+        worker_id=None,
+    ):
+        """Append a timed forecast record under the same case/lease write fence.
+
+        Only immutable request inputs enter the retry digest. The builder runs
+        after the case lock and retry lookup, so timestamps and latest-resolution
+        checks cannot make an identical retry disagree with its committed result.
+        The final timing guard runs after flush, immediately before commit.
+        """
+        if kind not in {"forecast", "forecast_resolution"}:
+            raise DomainError("INVALID_ARTIFACT", "Expected a forecast lifecycle artifact.")
+        digest = content_hash(dict(case_id=case_id, task_id=task_id, kind=kind, request=request))
+        with self.transaction() as s:
+            case = self._case_lock(s, case_id)
+            if case.status == "cancelled":
+                raise DomainError("CANCELLED", "This investigation has been cancelled.", 409)
+            if task_id:
+                task = self._task_lock(s, task_id)
+                self._check_lease(task, worker_id)
+                if task.case_id != case_id:
+                    raise DomainError("INVALID_TASK", "Artifact producer belongs to another case.")
+            existing = self._existing(s, ArtifactRow, idempotency_key, digest)
+            if existing:
+                if content_hash(existing.content) != existing.sha256:
+                    raise DomainError("ARTIFACT_CORRUPT", "Saved forecast failed integrity.", 409)
+                return row_dict(existing)
+            title, content, metadata = build(s, datetime.now(UTC))
+            if not title.strip() or len(title) > 200:
+                raise DomainError("INVALID_ARTIFACT", "Provide a bounded artifact title.")
+            if len(json.dumps(content, allow_nan=False).encode()) > 2_000_000:
+                raise DomainError("ARTIFACT_TOO_LARGE", "Artifact exceeds two megabytes.", 413)
+            row = ArtifactRow(
+                id=str(uuid4()),
+                case_id=case_id,
+                task_id=task_id,
+                kind=kind,
+                title=title,
+                content=content,
+                sha256=content_hash(content),
+                details=metadata,
+                idempotency_key=idempotency_key,
+                request_hash=digest,
+            )
+            s.add(row)
+            s.flush()
+            self._event(
+                s,
+                case_id,
+                "artifact.created",
+                {
+                    "artifact_id": row.id,
+                    "kind": kind,
+                    "title": title,
+                    "sha256": row.sha256,
+                },
+                task_id,
+            )
+            if task_id:
+                self._check_lease(task, worker_id)
+            validate_commit(datetime.now(UTC))
+            return row_dict(row)
+
+    def list_forecast_artifacts(self, case_id):
+        """Return complete history; the ordinary library's 500-item cap does not apply."""
+        with Session(self.engine) as s:
+            require(s, CaseRow, case_id)
+            rows = s.scalars(
+                select(ArtifactRow)
+                .where(
+                    ArtifactRow.case_id == case_id,
+                    ArtifactRow.kind.in_({"forecast", "forecast_resolution"}),
+                )
+                .order_by(ArtifactRow.created_at, ArtifactRow.id)
+            )
+            result = []
+            for row in rows:
+                if content_hash(row.content) != row.sha256:
+                    raise DomainError("ARTIFACT_CORRUPT", "Saved forecast failed integrity.", 409)
+                result.append(row_dict(row))
+            return result
 
     def recover_tool_artifact(self, task_id, call_id, name, arguments, worker_id):
         """Recover the committed effect of a tool whose completion record was interrupted.

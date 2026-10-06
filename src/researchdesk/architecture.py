@@ -53,7 +53,14 @@ def render_architecture():
         ' Handler --> Delegate["Coordinator delegates bounded child task"]\n'
         " Delegate --> Task\n"
         ' Handler --> Experiment["Causal simulation and automatic assessment"]\n'
-        " Experiment --> Record\n```\n",
+        " Experiment --> Record\n"
+        ' Handler --> Forecast["Immutable forecast before event window"]\n'
+        " Forecast --> Record\n"
+        ' Operator["Write-authorized operator after event window"] --> '
+        'Resolution["Source-cited outcome and correction history"]\n'
+        " Forecast --> Resolution\n"
+        " Resolution --> Record\n"
+        ' Resolution --> Score["Per-record Brier loss against saved baseline"]\n```\n',
         "There are four base roles. They share the system prompt; this is not four "
         "separate domain experts. A reviewed specialist activation augments a researcher "
         "with stored domain instructions and narrows its tool permissions. Only the "

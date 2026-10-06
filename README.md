@@ -54,8 +54,9 @@ flowchart LR
   rejections. Clinical dossiers preserve source-specific populations, analyses
   and disagreements, with exact citations and explicit missingness. Bounded source
   navigation keeps raw values and local group identities intact. Legacy extraction
-  comparisons use labels hidden from agents; the new source-qualified output
-  contract still needs independently checked references before clinical scoring.
+  comparisons use labels hidden from agents. A bounded registry-field reference
+  package has independent automated source checks; substantive clinical claim
+  evaluation and actual agent quality comparisons remain unfinished.
 - **An inspectable product.** React/Next.js views expose investigations, delegated
   work, tool inputs/results, code, equity curves, comparisons, review findings,
   library search, and paper accounting. Failures and missing valuations remain visible.
@@ -147,6 +148,31 @@ python examples/instrument_comparison_verification.py \
 
 It demonstrates why an assumed bullish outcome need not cover the premium paid
 for an option. Its TEST prices and probabilities are invented, not market evidence.
+
+## Follow a forecast through its outcome
+
+The case's **Forecasts** tab connects an exact hypothesis version to a binary
+question, probability, stated baseline and fixed Yes/No/unresolvable rules.
+Registration is stamped by the server before the declared event window begins.
+Agents can register through `register_forecast`; operators can use the form.
+
+After the event window, an operator cites retained evidence and records an outcome.
+Corrections append to the history. The current resolution determines the per-record
+Brier loss and baseline comparison; abstentions and unresolvable outcomes remain
+unscored. A timing record and a valid citation do not establish that the event was
+unknown, the adjudication is correct, or the model has predictive skill.
+
+Run the complete API walkthrough without credentials (development dependencies):
+
+```sh
+python examples/forecast_lifecycle_verification.py \
+  --database-url sqlite:///./data/researchdesk.db
+```
+
+This creates a visibly synthetic case, registers predictions before a short future
+event window, then retains invented reports and a correction. It makes no
+model or market requests. See [the lifecycle design](docs/decisions/0008-forecast-lifecycle.md)
+for authority, scoring conventions and the qualification boundary.
 
 ## Inspect a real computation without a model key
 

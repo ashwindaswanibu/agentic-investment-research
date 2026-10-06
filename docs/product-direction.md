@@ -108,6 +108,15 @@ and locally verified across the backend, production build and browser. See
 [comparison verification](research/instrument-comparison.md).
 This is not an options execution engine or a measured forecasting result.
 
+**Forecast lifecycle checkpoint:** A hypothesis can now lead to an immutable
+binary forecast registered before its event window, with a stated baseline and
+resolution rules. Operators append source-cited outcomes and corrections; the
+workbench retains pending, abstained and unresolvable records and shows per-record
+Brier loss. The same registration is available to researcher/coordinator agents.
+See [the executed workflow](research/forecast-lifecycle.md). Synthetic API/browser
+verification establishes workflow behavior, not actual research or forecasting skill.
+Do not expand this into calibration dashboards before genuine prospective outcomes.
+
 **Next research dependency:** qualify an actual supported model provider and freeze
 the bounded development-pilot protocol before running candidates. Existing Codex
 authentication was inspected, but a version-specific isolated provider boundary

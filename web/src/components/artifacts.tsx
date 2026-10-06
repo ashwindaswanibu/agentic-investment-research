@@ -13,6 +13,8 @@ import {
   Lightbulb,
   Users,
   Wrench,
+  Target,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 import type { Artifact, Json, JsonObject } from "@/lib/contracts";
@@ -52,6 +54,8 @@ export const artifactIcons: Partial<Record<string, LucideIcon>> = {
   paper_intent: GitBranch,
   clinical_dossier: Stethoscope,
   hypothesis: Lightbulb,
+  forecast: Target,
+  forecast_resolution: ClipboardCheck,
   evaluation_reference: FileText,
   evaluation_report: FlaskConical,
   specialist_spec: Users,
@@ -506,15 +510,19 @@ export function ArtifactModal({
               <dt>Producing task</dt>
               <dd className="mono">
                 {artifact.task_id ||
-                  (artifact.kind === "strategy_assessment"
-                    ? "System assessment"
-                    : artifact.kind === "instrument_comparison"
-                      ? "Operator comparison"
-                      : ["options_chain", "options_expirations"].includes(
-                            artifact.kind,
-                          )
-                        ? "Operator acquisition"
-                        : "Uploaded artifact")}
+                  (artifact.kind === "forecast_resolution"
+                    ? "Operator resolution"
+                    : artifact.kind === "forecast"
+                      ? "Operator registration"
+                      : artifact.kind === "strategy_assessment"
+                        ? "System assessment"
+                        : artifact.kind === "instrument_comparison"
+                          ? "Operator comparison"
+                          : ["options_chain", "options_expirations"].includes(
+                                artifact.kind,
+                              )
+                            ? "Operator acquisition"
+                            : "Uploaded artifact")}
               </dd>
             </div>
           </dl>
