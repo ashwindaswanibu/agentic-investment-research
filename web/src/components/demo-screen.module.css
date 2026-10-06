@@ -1,0 +1,147 @@
+.page {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.header {
+  padding: 28px 0 32px;
+  max-width: 720px;
+}
+.header h1 {
+  font-size: clamp(30px, 3.6vw, 48px);
+  line-height: 1.13;
+  letter-spacing: -1.5px;
+  margin: 18px 0;
+  font-weight: 550;
+}
+.header > p {
+  color: #56665e;
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 610px;
+}
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #466052;
+  margin-top: 21px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #dbe2d9;
+  border-top: 3px solid #376c56;
+  border-radius: 8px;
+}
+.number {
+  color: #59735f;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 1.1px;
+}
+.card h2 {
+  font-size: 25px;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  margin: 23px 0 14px;
+}
+.card > p {
+  color: #5d6962;
+  line-height: 1.65;
+  font-size: 14px;
+  margin: 0 0 18px;
+}
+.card ol {
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.65;
+  margin-bottom: 25px;
+}
+.card li {
+  padding-left: 5px;
+  margin: 10px 0;
+}
+.card li::marker {
+  color: #698570;
+}
+.link {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: #256b59;
+  font-size: 14px;
+  font-weight: 600;
+}
+.link:hover {
+  color: #153f32;
+}
+.link:focus-visible,
+.footer a:focus-visible {
+  outline: 2px solid #256b59;
+  outline-offset: 6px;
+}
+.scope {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 42px;
+  margin-top: 30px;
+  padding: 26px 0;
+  border-bottom: 1px solid var(--line);
+}
+.scope h2,
+.scope h3 {
+  font-size: 14px;
+  font-weight: 650;
+  margin: 0 0 9px;
+}
+.scope p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #607066;
+  margin: 0;
+}
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 0;
+  font-size: 11px;
+  color: #68786e;
+}
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #256b59;
+}
+@media (max-width: 720px) {
+  .header {
+    padding: 12px 0 26px;
+  }
+  .header h1 {
+    letter-spacing: -0.9px;
+  }
+  .cards,
+  .scope {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .card {
+    padding: 23px;
+  }
+  .header > p {
+    font-size: 15px;
+  }
+}

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 const resources = new Set([
   "health",
+  "demo",
   "capabilities",
   "session",
   "workspaces",

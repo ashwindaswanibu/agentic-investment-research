@@ -174,9 +174,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <small>
                   {caps.error
                     ? "Connection unavailable"
-                    : caps.data?.provider.configured
-                      ? caps.data.provider.name
-                      : "Provider setup needed"}
+                    : caps.data?.read_only
+                      ? "Read-only viewer"
+                      : caps.data?.provider.configured
+                        ? caps.data.provider.name
+                        : "Provider setup needed"}
                 </small>
               </span>
               <ArrowUpRight size={14} />
@@ -196,7 +198,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
               <span className="topbar-product">Workspace</span>
               <span className="breadcrumb-divider">/</span>
-              <span>{current.label}</span>
+              <span>
+                {pathname === "/demo" ? "Walkthrough" : current.label}
+              </span>
             </div>
             <div className="topbar-actions">
               <span className="mode-pill">

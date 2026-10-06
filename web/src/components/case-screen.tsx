@@ -246,7 +246,8 @@ export function CaseScreen({
         </ErrorNotice>
       )}
       {actionError && <ErrorNotice>{actionError}</ErrorNotice>}
-      {tab !== "forecasts" &&
+      {canWrite &&
+        tab !== "forecasts" &&
         data.status === "draft" &&
         !capabilities?.provider.configured && (
           <div className="info-notice">

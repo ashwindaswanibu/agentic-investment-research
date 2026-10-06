@@ -76,6 +76,23 @@ def test_read_only_is_server_enforced(app_factory):
         )
 
 
+def test_read_only_inspection_does_not_initialize_paper_control(app_factory):
+    from sqlalchemy import func, select
+    from sqlalchemy.orm import Session
+
+    from researchdesk.db import PaperControlRow
+
+    app = app_factory(read_only=True)
+    with TestClient(app) as client:
+        response = client.get("/api/paper/operations")
+        assert response.status_code == 200
+        assert response.json()["control"] == {"version": 0, "mode": "halted", "mandate_id": None}
+        assert response.json()["worker"]["active"] is False
+        assert client.get("/api/paper/portfolio").json()["initialized"] is False
+    with Session(app.state.store.engine) as session:
+        assert session.scalar(select(func.count()).select_from(PaperControlRow)) == 0
+
+
 def test_mutation_rejects_cross_origin_and_oversized_body(app_factory):
     with TestClient(app_factory()) as client:
         response = client.post(

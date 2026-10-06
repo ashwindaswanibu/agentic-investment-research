@@ -61,7 +61,38 @@ flowchart LR
   work, tool inputs/results, code, equity curves, comparisons, review findings,
   library search, and paper accounting. Failures and missing valuations remain visible.
 
-## Run locally
+## Try the workbench without credentials
+
+The [guided demonstration](docs/public-demo.md) builds a separate database from
+two explicitly synthetic examples. It uses the application's calculation,
+registration and source-checking paths. It does not call a model, connect to a
+market feed or place a paper trade.
+
+After installing Python dependencies (`pip install -c requirements.lock -e '.[dev]'`):
+
+```sh
+python examples/public_demo.py build --output artifacts/public-demo
+python examples/public_demo.py serve --directory artifacts/public-demo --port 8011
+```
+
+In another terminal:
+
+```sh
+cd web
+npm ci
+npm run build
+RESEARCH_API_URL=http://127.0.0.1:8011 PORT=3001 npm start
+```
+
+Open **http://127.0.0.1:3001/demo**. Inspect how option premiums change an assumed
+thesis payoff, then follow a forecast through an outcome correction. The builder
+refuses existing output directories; choose a new directory to rebuild. No Docker,
+model credentials, or market credentials are needed for this walkthrough.
+
+This demonstrates engineering behavior. An authenticated agent research run and
+evidence of investment usefulness remain separate, unfinished verification gates.
+
+## Run the research workspace locally
 
 Use Python 3.12+, Node 24, and Docker for generated-code execution. SQLite is the
 local default; PostgreSQL supports a shared worker deployment.

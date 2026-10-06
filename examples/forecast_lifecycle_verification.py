@@ -21,9 +21,9 @@ from researchdesk.config import Settings
 from researchdesk.store import Store
 
 
-def seed(database_url):
+def seed(database_url, *, settings=None):
     store = Store(database_url)
-    settings = Settings(_env_file=None, database_url=database_url, read_only=False)
+    settings = settings or Settings(_env_file=None, database_url=database_url, read_only=False)
     try:
         case = store.create_case(
             "Forecasts · synthetic outcome review",

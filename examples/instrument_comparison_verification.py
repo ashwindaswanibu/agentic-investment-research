@@ -18,7 +18,7 @@ from researchdesk.options_workflow import OptionsChainInput, acquire_options
 from researchdesk.store import Store
 
 
-def seed(database_url):
+def seed(database_url, *, settings=None):
     received = datetime.now(UTC)
     expiry = (received + timedelta(days=30)).date()
     quoted = received - timedelta(minutes=15)
@@ -58,7 +58,7 @@ def seed(database_url):
         raise AssertionError("Unexpected network path in synthetic verification")
 
     store = Store(database_url)
-    research = ResearchTools(store, Settings(_env_file=None, database_url=database_url))
+    research = ResearchTools(store, settings or Settings(_env_file=None, database_url=database_url))
     try:
         case = store.create_case(
             "Thesis expressions · synthetic comparison",

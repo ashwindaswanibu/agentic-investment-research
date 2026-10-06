@@ -96,7 +96,9 @@ def create_app(settings=None, store=None, research=None):
     store = store or Store(settings.database_url)
     research = research or ResearchTools(store, settings)
     paper = PaperService(store, research)
-    operations = PaperOperations(store, research, quote_provider(settings))
+    operations = PaperOperations(
+        store, research, quote_provider(settings), initialize=not settings.read_only
+    )
 
     @asynccontextmanager
     async def lifespan(app):

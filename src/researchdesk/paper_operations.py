@@ -95,8 +95,10 @@ def quote_provider(settings):
 
 
 class PaperOperations:
-    def __init__(self, store, research, provider):
+    def __init__(self, store, research, provider, *, initialize=True):
         self.store, self.research, self.provider = store, research, provider
+        if not initialize:
+            return
         with store.transaction() as session:
             self._insert(
                 session,
@@ -798,7 +800,11 @@ class PaperOperations:
 
     def status(self):
         with Session(self.store.engine) as session:
-            control = session.get(PaperControlRow, ACCOUNT)
+            # An unused read-only viewer must not initialize operating state just
+            # to inspect it. Report inactive defaults without writing a row.
+            control = session.get(PaperControlRow, ACCOUNT) or PaperControlRow(
+                id=ACCOUNT, version=0, mode="halted", fence=0, drawdown_tripped=False
+            )
             mandates = [
                 row_dict(row)
                 for row in session.scalars(

@@ -1,6 +1,8 @@
 # Running Research Desk
 
-The default configuration is a read-only viewer with no model provider. Agent runs
+Compose and `.env.example` default to a read-only viewer with no model provider.
+Native Python without an environment file defaults to a writable local workspace
+with its model provider disabled. Agent runs
 need an authenticated provider and a running worker. Generated Python additionally
 needs Docker and the sandbox image. There is no canned-response or host-execution
 fallback.
@@ -131,6 +133,12 @@ and deadline labels. OpenAI HTTP requests may finish or time out after a stop or
 cancellation; revoked leases prevent subsequent tool execution and writes.
 
 ## Public viewer
+
+For a repeatable walkthrough with no private data, use the
+[dedicated demonstration builder and viewer](public-demo.md). It creates a fresh
+synthetic database, isolates configuration and opens the completed database
+read-only. The ordinary deployment instructions below support reviewed research
+content and do not provide the demo builder's data isolation guarantees.
 
 Use a separate publication database containing only approved artifacts. Set
 `RESEARCHDESK_READ_ONLY=true`, `RESEARCHDESK_PROVIDER=disabled`, and leave the model

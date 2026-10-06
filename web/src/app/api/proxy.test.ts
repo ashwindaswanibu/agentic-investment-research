@@ -8,6 +8,23 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 describe("same-origin backend proxy", () => {
+  it("forwards the public demo manifest without caching it", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(new Response('{"synthetic":true}'));
+    vi.stubGlobal("fetch", fetcher);
+    const response = await GET(
+      new NextRequest("http://localhost:3000/api/demo"),
+      {
+        params: Promise.resolve({ path: ["demo"] }),
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(String(fetcher.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:8010/api/demo",
+    );
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
   it("forwards forecast resolutions and preserves backend correction conflicts", async () => {
     const body = { outcome: "no", previous_resolution_id: "prior-resolution" };
     const conflict = {

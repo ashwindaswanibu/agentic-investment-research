@@ -1,5 +1,46 @@
 # Verification record
 
+## Isolated demonstration package, 2026-10-05
+
+The [guided demo](public-demo.md) now builds its own finite synthetic database
+and serves it through the application with a read-only SQLite connection. No
+operator data or credentials are copied. This qualifies a local engineering
+walkthrough, not an authenticated agent run or a public deployment.
+
+- 1,302 offline Python tests passed; three PostgreSQL-dependent cases skipped,
+  24 live/sandbox/integration cases deselected. The existing Starlette/httpx
+  deprecation warning remains. The demo's 16 tests include conflicting environment
+  and dotenv credentials, outbound-network/process denial, modified packages,
+  source lineage, overwrite refusal and API/database write rejection.
+- 138 frontend tests passed, as did TypeScript and the production build. A final
+  read-only presentation adjustment passed 22 targeted tests and another build.
+  Ruff lint/format and whitespace checks passed. Independent review ran 61 focused
+  demo/API/paper-operation tests and found no blocker within the documented scope.
+- A clean copy of all 245 source files rebuilt two cases and 17 synthetic artifacts
+  with zero provider requests. This reused the installed Python dependencies;
+  it was not a fresh dependency-install or hosted-container qualification.
+- Browser inspection followed both entry-page links into computed comparisons
+  and corrected forecast scores, checked the read-only state and the 390-pixel
+  layout. The comparison still shows its missing ask as unavailable; forecast
+  history retains the correction and the resulting 0.49 versus 0.25 Brier errors.
+- A bounded audit of 237 tracked files, 11 existing commits and 353 historical
+  blobs found no tracked environment files (apart from examples), local databases,
+  private-key headers, OpenAI-key patterns or local user paths. This pattern audit
+  is not exhaustive secret certification. New demo files contain synthetic inputs
+  and code only; generated databases and receipts remain ignored.
+
+During this work, read-only API startup was changed to avoid initializing paper
+control state. An empty viewer reports a halted, unfunded account without writing
+operating records. Ordinary operator initialization retains its previous behavior.
+Manifest hashes establish local integrity, not signed provenance. Package files
+must remain unchanged while the immutable viewer runs.
+
+Public repository publication, remote CI, HTTPS hosting, a real model-driven
+research demonstration, Tradier authentication and investment usefulness remain
+unverified. No resume performance claims were added.
+
+## Earlier verification
+
 Local verification on October 5, 2026 covered the following boundaries. These
 checks establish engineering behavior within the stated scope; they are not
 investment-performance results.
