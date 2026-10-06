@@ -1,0 +1,65 @@
+name: Compare pinned LEAN options lifecycle
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/lean-spike.yml
+      - examples/engine_spikes/lean/**
+      - examples/engine_spikes/lean_fixture.py
+      - examples/engine_spikes/run_lean_spike.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-spike-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synthetic-engine-comparison:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: "10.0.401"
+      - name: Check out the exact source reviewed for the comparison
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: QuantConnect/Lean
+          ref: 705b9551be1aaa821c7f77896a7eb8fcd07b92ee
+          path: artifacts/lean-source
+          persist-credentials: false
+      - name: Compile the real launcher with the isolated fixture algorithm
+        run: |
+          mkdir -p artifacts/lean-build
+          test "$(git -C artifacts/lean-source rev-parse HEAD)" = 705b9551be1aaa821c7f77896a7eb8fcd07b92ee
+          cp examples/engine_spikes/lean/ResearchDeskOptionsAlgorithm.cs artifacts/lean-source/Algorithm.CSharp/
+          dotnet --info > artifacts/lean-build/dotnet-info.txt
+          if ! dotnet build artifacts/lean-source/Launcher/QuantConnect.Lean.Launcher.csproj -c Release --verbosity minimal -p:RestorePackagesWithLockFile=true > artifacts/lean-build/build.log 2>&1; then
+            tail -n 100 artifacts/lean-build/build.log
+            exit 1
+          fi
+          dotnet list artifacts/lean-source/Launcher/QuantConnect.Lean.Launcher.csproj package --include-transitive --format json > artifacts/lean-build/packages.json
+      - name: Replay generated data with external networking disabled
+        run: |
+          sudo unshare --net -- env PATH="$PATH" DOTNET_ROOT="$DOTNET_ROOT" \
+            python3 examples/engine_spikes/run_lean_spike.py \
+            --lean-root artifacts/lean-source --output artifacts/lean-results
+      - name: Retain observations and build diagnostics, including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lean-options-spike
+          path: |
+            artifacts/lean-results
+            artifacts/lean-build
+          if-no-files-found: warn
+          retention-days: 14
