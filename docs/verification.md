@@ -1,5 +1,22 @@
 # Verification record
 
+## Supported-resolution LEAN controls, 2026-10-06 UTC
+
+The separately preregistered minute-input experiment ran through the full pinned
+LEAN engine in [CI](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37412786303)
+at commit `07969b67932501a0cc3063cca09e32387478dc4e`.
+Funded ITM exercise, identical replay and OTM expiry all completed with exact native
+final statuses, actual entry fills, hand-reconciled cash/positions and bar-availability
+checks. Entries occurred at 15:56 New York; native lifecycle events occurred at
+00:00 the following day. The ITM receipt and input hashes matched on replay.
+63 local runner/fixture tests passed before dispatch. Independent review reconciled
+the actual observations; see the [full bounded result](decisions/lean-minute-protocol.md#executed-result-2026-10-06-utc).
+
+These results qualify only the declared funded synthetic controls. They do not
+qualify tick fills, shortfall, stale settlement sources, short assignment, multileg
+execution, recovery, actual liquidity or strategy performance. Engine adoption
+and options admission remain unfinished.
+
 ## Full LEAN tick-input attempt, 2026-10-06 UTC
 
 - Pinned LEAN source and .NET SDK compiled the real C# launcher and isolated

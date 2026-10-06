@@ -13,8 +13,10 @@ The negative cases expose integration requirements that a successful backtest al
 would miss. The [subsequent LEAN execution](lean-runtime-protocol.md#first-execution-native-tick-input-rejected)
 compiled and launched the full engine, but all eight scenarios were rejected during
 initialization because native options backtests do not support Tick resolution.
-Its lifecycle behavior remains unverified. A separately declared minute-bar study
-is needed; it cannot establish equivalent tick-level fill behavior.
+The [separate minute-bar controls](lean-minute-protocol.md#executed-result-2026-10-06-utc)
+then completed funded ITM exercise, its identical replay and worthless OTM expiry,
+matching hand arithmetic and completed-bar timing. They do not establish equivalent
+tick-level fill behavior or qualify the remaining failure/assignment cases.
 
 Keep the engine boundary proposed in ADR 0002: ResearchDesk owns evidence and authority;
 one selected engine owns economic simulation. A completed, validated event batch may

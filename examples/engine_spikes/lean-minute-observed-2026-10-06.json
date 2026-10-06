@@ -1,0 +1,389 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-06",
+  "evidence_kind": "case records extracted from completed GitHub Actions job log; full raw observations and build diagnostics retained in linked artifact",
+  "repository_commit": "07969b67932501a0cc3063cca09e32387478dc4e",
+  "lean_commit": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+  "dotnet_sdk": "10.0.401",
+  "suite": "minute",
+  "synthetic": true,
+  "workflow_run": "https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37412786303",
+  "artifact": "https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37412786303/artifacts/11389728410",
+  "engine_adoption": false,
+  "original_tick_partial_fill_qualified": false,
+  "funded_replay_economic_state_equal": true,
+  "cases": [
+    {
+      "run": "minute_itm",
+      "scenario": "minute_itm",
+      "returncode": 0,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-minute_itm-summary.json",
+          "sha256": "689f82c9850a4f765c86b2f61a0d1c178389fc135c2c8d85365bcf9698b2007e",
+          "state": {
+            "StartTime": "2026-10-06T04:16:30Z",
+            "EndTime": "2026-10-06T04:16:31Z",
+            "RuntimeError": "",
+            "StackTrace": "",
+            "LogCount": "4",
+            "OrderCount": "2",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: minute_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "Completed"
+          }
+        },
+        {
+          "file": "researchdesk-minute_itm.json",
+          "sha256": "2bbd892bf36d5306eb78fa386fd1ab75af0e91a2df172b19bdbb5f807d8eaa5f",
+          "state": {
+            "StartTime": "2026-10-06T04:16:30Z",
+            "EndTime": "2026-10-06T04:16:31Z",
+            "RuntimeError": "",
+            "StackTrace": "",
+            "LogCount": "4",
+            "OrderCount": "2",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: minute_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "Completed"
+          }
+        }
+      ],
+      "engine_execution_status": "completed",
+      "receipt_sha256": "266652bb27689eb048a1f72bb1623f707ab26952ec541a53fab8fb42d5c9261f",
+      "assessment": {
+        "scenario": "minute_itm",
+        "entry_submitted": true,
+        "on_end_of_algorithm_called": true,
+        "algorithm_status_in_callback": "Running",
+        "fill_events": [
+          {
+            "order_id": 1,
+            "event_id": 2,
+            "utc_time": "2026-01-16T20:56:00.0000000Z",
+            "instrument": "call100",
+            "order_type": "Market",
+            "status": "Filled",
+            "fill_quantity": 1,
+            "fill_price": 2,
+            "fee": 0,
+            "is_assignment": false
+          },
+          {
+            "order_id": 2,
+            "event_id": 1,
+            "utc_time": "2026-01-17T05:00:00.0000000Z",
+            "instrument": "call100",
+            "order_type": "OptionExercise",
+            "status": "Filled",
+            "fill_quantity": -1,
+            "fill_price": 0,
+            "fee": 0,
+            "is_assignment": false
+          },
+          {
+            "order_id": 2,
+            "event_id": 2,
+            "utc_time": "2026-01-17T05:00:00.0000000Z",
+            "instrument": "underlying",
+            "order_type": "OptionExercise",
+            "status": "Filled",
+            "fill_quantity": 100,
+            "fill_price": 100,
+            "fee": 0,
+            "is_assignment": false
+          }
+        ],
+        "last_callback_economics": {
+          "cash": 9800,
+          "unsettled_cash": 0,
+          "total_portfolio_value": 20800,
+          "total_fees": 0,
+          "quantities": {
+            "underlying": 100,
+            "call100": 0
+          }
+        },
+        "terminal_economics": {
+          "cash": 9800,
+          "unsettled_cash": 0,
+          "total_portfolio_value": 20800,
+          "total_fees": 0,
+          "quantities": {
+            "underlying": 100,
+            "call100": 0
+          }
+        },
+        "terminal_verified": true,
+        "engine_adoption": false,
+        "expected_after_one_entry_at_2_and_native_expiry": {
+          "cash": 9800,
+          "call100": 0,
+          "underlying": 100
+        },
+        "entry_fill_matches_control": true,
+        "minute_chronology": {
+          "qualified": true,
+          "first_allowed_entry_utc": "2026-01-16T20:56:00+00:00",
+          "observed_call100_bar_count": 2,
+          "first_observed_bar_end_utc": "2026-01-16T20:56:00+00:00",
+          "first_entry_fill_utc": "2026-01-16T20:56:00+00:00",
+          "errors": []
+        },
+        "original_tick_partial_fill_qualified": false,
+        "matches_terminal_accounting": true
+      },
+      "elapsed_seconds": 3.63,
+      "fixture_sha256": "07e81ccd3532c3e6eca1c5d77b3131acbb6a2b7e676ed8969c2beb676a8c0867",
+      "config_sha256": "b0a1eb19e2cb514e2879815d0dd1502babee5f48a0ba91a51d2c797d20064861",
+      "engine_log_sha256": "d15b58fc26e3897f1604c50f6cd3d7d76f5b34d3f2b8ec2b8aa829eada1dbfaa"
+    },
+    {
+      "run": "minute_itm_replay",
+      "scenario": "minute_itm",
+      "returncode": 0,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-minute_itm-summary.json",
+          "sha256": "e07689d301e0a1fcf2cb346100bc78f6f18483d3e7e1b18444030c65dc7ebbee",
+          "state": {
+            "StartTime": "2026-10-06T04:16:34Z",
+            "EndTime": "2026-10-06T04:16:35Z",
+            "RuntimeError": "",
+            "StackTrace": "",
+            "LogCount": "4",
+            "OrderCount": "2",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: minute_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "Completed"
+          }
+        },
+        {
+          "file": "researchdesk-minute_itm.json",
+          "sha256": "49a9766823cf8346c560d142d596622358b7821642c0c9bbd49727093e0eb0e8",
+          "state": {
+            "StartTime": "2026-10-06T04:16:34Z",
+            "EndTime": "2026-10-06T04:16:35Z",
+            "RuntimeError": "",
+            "StackTrace": "",
+            "LogCount": "4",
+            "OrderCount": "2",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: minute_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "Completed"
+          }
+        }
+      ],
+      "engine_execution_status": "completed",
+      "receipt_sha256": "266652bb27689eb048a1f72bb1623f707ab26952ec541a53fab8fb42d5c9261f",
+      "assessment": {
+        "scenario": "minute_itm",
+        "entry_submitted": true,
+        "on_end_of_algorithm_called": true,
+        "algorithm_status_in_callback": "Running",
+        "fill_events": [
+          {
+            "order_id": 1,
+            "event_id": 2,
+            "utc_time": "2026-01-16T20:56:00.0000000Z",
+            "instrument": "call100",
+            "order_type": "Market",
+            "status": "Filled",
+            "fill_quantity": 1,
+            "fill_price": 2,
+            "fee": 0,
+            "is_assignment": false
+          },
+          {
+            "order_id": 2,
+            "event_id": 1,
+            "utc_time": "2026-01-17T05:00:00.0000000Z",
+            "instrument": "call100",
+            "order_type": "OptionExercise",
+            "status": "Filled",
+            "fill_quantity": -1,
+            "fill_price": 0,
+            "fee": 0,
+            "is_assignment": false
+          },
+          {
+            "order_id": 2,
+            "event_id": 2,
+            "utc_time": "2026-01-17T05:00:00.0000000Z",
+            "instrument": "underlying",
+            "order_type": "OptionExercise",
+            "status": "Filled",
+            "fill_quantity": 100,
+            "fill_price": 100,
+            "fee": 0,
+            "is_assignment": false
+          }
+        ],
+        "last_callback_economics": {
+          "cash": 9800,
+          "unsettled_cash": 0,
+          "total_portfolio_value": 20800,
+          "total_fees": 0,
+          "quantities": {
+            "underlying": 100,
+            "call100": 0
+          }
+        },
+        "terminal_economics": {
+          "cash": 9800,
+          "unsettled_cash": 0,
+          "total_portfolio_value": 20800,
+          "total_fees": 0,
+          "quantities": {
+            "underlying": 100,
+            "call100": 0
+          }
+        },
+        "terminal_verified": true,
+        "engine_adoption": false,
+        "expected_after_one_entry_at_2_and_native_expiry": {
+          "cash": 9800,
+          "call100": 0,
+          "underlying": 100
+        },
+        "entry_fill_matches_control": true,
+        "minute_chronology": {
+          "qualified": true,
+          "first_allowed_entry_utc": "2026-01-16T20:56:00+00:00",
+          "observed_call100_bar_count": 2,
+          "first_observed_bar_end_utc": "2026-01-16T20:56:00+00:00",
+          "first_entry_fill_utc": "2026-01-16T20:56:00+00:00",
+          "errors": []
+        },
+        "original_tick_partial_fill_qualified": false,
+        "matches_terminal_accounting": true
+      },
+      "elapsed_seconds": 3.237,
+      "fixture_sha256": "07e81ccd3532c3e6eca1c5d77b3131acbb6a2b7e676ed8969c2beb676a8c0867",
+      "config_sha256": "669d678fef7d7e57d154ff06da4e5b07f7b35f8d713d17200a910dac11f1fdf9",
+      "engine_log_sha256": "4446e9a6a41ffd2b9603ae2288fe10a2340677359586cb560595357cbc010524"
+    },
+    {
+      "run": "minute_otm",
+      "scenario": "minute_otm",
+      "returncode": 0,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-minute_otm-summary.json",
+          "sha256": "454245f6d688b7ef0f55ce3d1985c26d4e618c947ff5d01f1aa0c3984c8ee5b3",
+          "state": {
+            "StartTime": "2026-10-06T04:16:37Z",
+            "EndTime": "2026-10-06T04:16:38Z",
+            "RuntimeError": "",
+            "StackTrace": "",
+            "LogCount": "4",
+            "OrderCount": "2",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: minute_otm",
+            "Hostname": "runnervm8df0l",
+            "Status": "Completed"
+          }
+        },
+        {
+          "file": "researchdesk-minute_otm.json",
+          "sha256": "752ec9dbec7a75f6860cac5aedd633bf0f8caafae011079e3930bd83765bb560",
+          "state": {
+            "StartTime": "2026-10-06T04:16:37Z",
+            "EndTime": "2026-10-06T04:16:38Z",
+            "RuntimeError": "",
+            "StackTrace": "",
+            "LogCount": "4",
+            "OrderCount": "2",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: minute_otm",
+            "Hostname": "runnervm8df0l",
+            "Status": "Completed"
+          }
+        }
+      ],
+      "engine_execution_status": "completed",
+      "receipt_sha256": "9ef3ea0d02c040c8c99f570a93c95f3c5c38d5e3069b756cbbb604c4a105c7ce",
+      "assessment": {
+        "scenario": "minute_otm",
+        "entry_submitted": true,
+        "on_end_of_algorithm_called": true,
+        "algorithm_status_in_callback": "Running",
+        "fill_events": [
+          {
+            "order_id": 1,
+            "event_id": 2,
+            "utc_time": "2026-01-16T20:56:00.0000000Z",
+            "instrument": "call100",
+            "order_type": "Market",
+            "status": "Filled",
+            "fill_quantity": 1,
+            "fill_price": 2,
+            "fee": 0,
+            "is_assignment": false
+          },
+          {
+            "order_id": 2,
+            "event_id": 1,
+            "utc_time": "2026-01-17T05:00:00.0000000Z",
+            "instrument": "call100",
+            "order_type": "OptionExercise",
+            "status": "Filled",
+            "fill_quantity": -1,
+            "fill_price": 0,
+            "fee": 0,
+            "is_assignment": false
+          }
+        ],
+        "last_callback_economics": {
+          "cash": 19800,
+          "unsettled_cash": 0,
+          "total_portfolio_value": 19800,
+          "total_fees": 0,
+          "quantities": {
+            "underlying": 0,
+            "call100": 0
+          }
+        },
+        "terminal_economics": {
+          "cash": 19800,
+          "unsettled_cash": 0,
+          "total_portfolio_value": 19800,
+          "total_fees": 0,
+          "quantities": {
+            "underlying": 0,
+            "call100": 0
+          }
+        },
+        "terminal_verified": true,
+        "engine_adoption": false,
+        "expected_after_one_entry_at_2_and_native_expiry": {
+          "cash": 19800,
+          "call100": 0,
+          "underlying": 0
+        },
+        "entry_fill_matches_control": true,
+        "minute_chronology": {
+          "qualified": true,
+          "first_allowed_entry_utc": "2026-01-16T20:56:00+00:00",
+          "observed_call100_bar_count": 2,
+          "first_observed_bar_end_utc": "2026-01-16T20:56:00+00:00",
+          "first_entry_fill_utc": "2026-01-16T20:56:00+00:00",
+          "errors": []
+        },
+        "original_tick_partial_fill_qualified": false,
+        "matches_terminal_accounting": true
+      },
+      "elapsed_seconds": 3.275,
+      "fixture_sha256": "1964ba2981221602b8ce7e6f98ee907306641c3b53cba1b921ad2545f93f8158",
+      "config_sha256": "b7d1d1732ef08f2873ec2a31fbf6d1d93e18f12e6c2b31f76bc3a30520798c4e",
+      "engine_log_sha256": "84ee721df9d73562e08f52cf12a7391625e0b4080b836f5fa0433e51df3cb5a8"
+    }
+  ]
+}

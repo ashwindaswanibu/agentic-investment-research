@@ -72,3 +72,39 @@ fidelity, spread execution and actual research performance remain separate work.
 Native formats were checked against pinned
 [QuoteBar parsing](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Common/Data/Market/QuoteBar.cs)
 and [serialization/names](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Common/Util/LeanData.cs).
+
+## Executed result, 2026-10-06 UTC
+
+The [actual CI run](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37412786303)
+compiled and executed this protocol at ResearchDesk commit
+`07969b67932501a0cc3063cca09e32387478dc4e`. All three runs exited normally, with
+both exact native final result files reporting `Completed`, a final time and no
+runtime error. [Retained case records](../../examples/engine_spikes/lean-minute-observed-2026-10-06.json)
+bind the input/configuration/observation hashes and native statuses. The linked
+run artifact holds the full raw observations and build diagnostics.
+
+All entries filled one contract at 2.00 with zero fees at 20:56 UTC, January 16
+(15:56 New York), after delivery of the first complete option bar. Both option
+bars were observed; the independent runner chronology checks passed.
+
+| Case | Native lifecycle at 05:00 UTC January 17 (00:00 New York) | Final cash | Calls | Shares | Equity |
+|---|---|---:|---:|---:|---:|
+| Funded ITM | Call closes at zero; 100 shares delivered at strike 100 | 9,800 | 0 | 100 | 20,800 |
+| Identical ITM replay | Same economic events and terminal state | 9,800 | 0 | 100 | 20,800 |
+| OTM | Call closes at zero without share delivery | 19,800 | 0 | 0 | 19,800 |
+
+The native OTM removal is labelled `OptionExercise` by LEAN; it is worthless
+expiry/removal economically, not payment of a strike or acquisition of shares.
+Do not relabel the observed midnight lifecycle as occurring at the tape's 16:00
+underlying-price update. Settled plus unsettled cash matches the independent
+arithmetic; terminal unsettled cash and fees are zero in these runs.
+
+A separate reviewer checked native statuses, time conversion, entry/lifecycle
+events and hand arithmetic. ITM fixture hashes, observation-receipt hashes,
+economic fill events and terminal economics match across the two runs. This
+finite replay does not establish restart recovery or identifier stability generally.
+
+This closes the first funded minute-input control set. Native tick partial fills,
+cancellation, funding shortfalls, missing/stale settlement inputs, short assignment,
+multileg execution and broker fidelity remain unqualified. No engine adoption,
+options admission, real liquidity or investment-performance claim follows.

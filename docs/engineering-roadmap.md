@@ -152,8 +152,11 @@ The [executed first spike](decisions/options-engine-spike.md) found funded-expir
 agreement plus partial-error state and missing/stale-settlement-input failures in
 a pinned Nautilus release candidate. The [first full LEAN runtime attempt](decisions/lean-runtime-protocol.md#first-execution-native-tick-input-rejected)
 compiled successfully but rejected the tick input during initialization in all
-eight runs. No engine is selected; a supported-resolution lifecycle comparison
-and broader lifecycle tests remain outstanding.
+eight runs. The [subsequent minute-bar controls](decisions/lean-minute-protocol.md#executed-result-2026-10-06-utc)
+completed funded ITM exercise, replay and OTM expiry with independent arithmetic
+and chronology checks. This closes the first control set, not engine selection.
+Shortfall, stale inputs, assignment and broader lifecycle qualification remain.
+Return to M1 research usefulness before expanding those cases further.
 
 **M2 — measure adaptive specialists and reusable tools.** Extend M1 with a
 signal-driven capability gap, domain/prompt specification, coder implementation,
