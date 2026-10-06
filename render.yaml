@@ -1,0 +1,13 @@
+# Public synthetic viewer only. No worker, credentials, external database or paid disk.
+services:
+  - type: web
+    name: agentic-investment-research-demo
+    runtime: docker
+    plan: free
+    region: virginia
+    branch: main
+    dockerfilePath: ./deploy/public-demo.Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    maxShutdownDelaySeconds: 30
