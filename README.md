@@ -1,5 +1,7 @@
 # Researchdesk
 
+[![Validate research workbench](https://github.com/ashwindaswanibu/agentic-investment-research/actions/workflows/ci.yml/badge.svg)](https://github.com/ashwindaswanibu/agentic-investment-research/actions/workflows/ci.yml)
+
 **Agentic investment research with executable experiments and inspectable decisions.**
 
 Researchdesk gives specialist LLM agents a bounded environment to investigate
@@ -9,6 +11,11 @@ input versions, failures, and reviews behind each result.
 
 Research spans quantitative strategies and clinical evidence; it is not
 restricted to SEC filings. Trading is entirely paper, with no live broker client.
+
+This is an experimental workbench. [Remote CI](docs/verification.md) verifies
+application, PostgreSQL, sandbox and frontend behavior; authenticated agent
+research quality and investment usefulness remain unmeasured. The interactive
+demo currently runs locally using the recipe below.
 
 ## Follow the work, not just the answer
 

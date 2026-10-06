@@ -75,7 +75,9 @@ Public hosting additionally needs an HTTPS deployment with the frontend pointing
 at this dedicated viewer. Keep the API behind the frontend/reverse proxy. Do not
 attach an execution worker, expose the operator service, or substitute its
 database. The local recipe does not provision hosting or claim a verified public
-URL. Container deployment and remote CI remain separate qualification gates.
+URL. [Remote CI](verification.md#public-repository-and-remote-ci-2026-10-05) has
+passed. A hosted viewer and deployed API/web container smoke remain separate
+qualification gates.
 
 ## Why this design
 

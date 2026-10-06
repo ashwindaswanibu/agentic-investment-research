@@ -1,5 +1,39 @@
 # Verification record
 
+## Public repository and remote CI, 2026-10-05
+
+The source is public at
+[ashwindaswanibu/agentic-investment-research](https://github.com/ashwindaswanibu/agentic-investment-research).
+The [first GitHub Actions run](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37406193773)
+completed successfully on source commit `e1eaf73de6ea2c418d9f805b97848c2db9cd80ae`.
+It used fresh Ubuntu runners with Python 3.12 and Node 24:
+
+- **Python:** constrained installation, Ruff lint/format, 1,302 offline tests,
+  then 11 tests against actual PostgreSQL covering concurrency and recovery.
+  The offline matrix skipped three inapplicable timestamp/location combinations
+  and deselected 24 declared service-dependent tests; the skips are not missing
+  PostgreSQL checks. The existing Starlette/httpx warning remains.
+- **Sandbox:** built the pinned execution image, asserted Docker readiness and
+  passed six actual container isolation, cancellation, recovery and generated-policy
+  tests. The other 55 tests in those files were deselected for this specific job.
+- **Frontend:** fresh `npm ci`, typecheck, 138 tests and a production build passed.
+- **Dependency audits:** Python's locked dependency audit and the frontend
+  production dependency audit reported no known vulnerabilities at run time.
+
+The final publication review caught and fixed a fresh-checkout setup bug: the demo
+builder now creates the missing parent of `artifacts/public-demo` while continuing
+to reject an existing output directory. Its 16 focused tests passed. The exact
+README build command then succeeded from a `git archive` with no `artifacts/`
+directory, retaining two cases and 17 synthetic artifacts. That additional local
+replay reused the installed Python environment; remote CI supplied the fresh
+dependency installations.
+
+These results establish the stated engineering checks, not investment performance
+or autonomous research quality. HTTPS demo hosting, a genuine model-driven
+research demonstration, authenticated Tradier verification, options lifecycle
+qualification and sustained operation remain unfinished. Earlier entries below
+describe the state at their respective milestones.
+
 ## Isolated demonstration package, 2026-10-05
 
 The [guided demo](public-demo.md) now builds its own finite synthetic database
@@ -7,7 +41,7 @@ and serves it through the application with a read-only SQLite connection. No
 operator data or credentials are copied. This qualifies a local engineering
 walkthrough, not an authenticated agent run or a public deployment.
 
-- 1,302 offline Python tests passed; three PostgreSQL-dependent cases skipped,
+- 1,302 offline Python tests passed; three inapplicable parameter combinations skipped,
   24 live/sandbox/integration cases deselected. The existing Starlette/httpx
   deprecation warning remains. The demo's 16 tests include conflicting environment
   and dotenv credentials, outbound-network/process denial, modified packages,
@@ -35,7 +69,8 @@ operating records. Ordinary operator initialization retains its previous behavio
 Manifest hashes establish local integrity, not signed provenance. Package files
 must remain unchanged while the immutable viewer runs.
 
-Public repository publication, remote CI, HTTPS hosting, a real model-driven
+At this milestone, publication and remote CI were still pending; the subsequent
+checkpoint above records their completion. HTTPS hosting, a real model-driven
 research demonstration, Tradier authentication and investment usefulness remain
 unverified. No resume performance claims were added.
 
