@@ -1,4 +1,4 @@
-"""Write synthetic LEAN tick fixtures, never copying upstream market prices.
+"""Write synthetic LEAN fixtures, never copying upstream market prices.
 
 Import ``build_fixture(scenario, destination, source_data)`` or run this module:
     python examples/engine_spikes/lean_fixture.py market_itm --output NEW_DIRECTORY \
@@ -31,6 +31,8 @@ SCENARIOS = (
     "market_quote_only",
     "market_stale_trade",
     "vertical_assignment",
+    "minute_itm",
+    "minute_otm",
 )
 METADATA_FILES = (
     "market-hours/market-hours-database.json",
@@ -58,6 +60,8 @@ def _event(day, clock, *, strike=None, price=None, bid=None, ask=None, size=100)
 
 
 def _events(scenario):
+    if scenario in {"minute_itm", "minute_otm"}:
+        return _minute_events(scenario)
     if scenario == "vertical_assignment":
         times = [("2026-01-15", "09:31:00"), ("2026-01-15", "09:31:01")]
         point = datetime(2026, 1, 15, 9, 35)
@@ -103,6 +107,35 @@ def _events(scenario):
     )
 
 
+def _minute_events(scenario):
+    """Separate declared bar tape; never aggregate the rejected tick experiment."""
+    events = []
+    for clock in ("15:55:00", "15:56:00"):
+        event = _event(EXPIRY, clock, strike=100, bid="2.00", ask="2.00", size=10)
+        end = datetime.fromisoformat(event["local_time"]) + timedelta(minutes=1)
+        event.update(
+            data_type="QuoteBar",
+            period_seconds=60,
+            local_end_time=end.isoformat(),
+            utc_end_time=end.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+            bid_ohlc=["2.00"] * 4,
+            ask_ohlc=["2.00"] * 4,
+        )
+        events.append(event)
+    spot = "110.00" if scenario == "minute_itm" else "90.00"
+    for clock in ("15:55:55", "15:59:55", "16:00:00", "16:00:01"):
+        events.append(_event(EXPIRY, clock, price="100.00" if clock < "16:00:00" else spot))
+    # Bars are inventoried by availability, not their CSV start timestamp.
+    return sorted(
+        events,
+        key=lambda event: (
+            event.get("utc_end_time", event["utc_time"]),
+            event["symbol"],
+            event["tick_type"],
+        ),
+    )
+
+
 def _scaled(value):
     return str(int(Decimal(value) * 10000))
 
@@ -137,6 +170,22 @@ def _tick_record(event):
     return archive, member, ",".join(fields) + "\n"
 
 
+def _quote_bar_record(event):
+    local = datetime.fromisoformat(event["local_time"])
+    day = local.strftime("%Y%m%d")
+    milliseconds = str(((local.hour * 60 + local.minute) * 60 + local.second) * 1000)
+    archive = f"option/usa/minute/test/{day}_quote_american.zip"
+    member = f"{day}_test_minute_quote_american_call_{_scaled(event['strike'])}_20260116.csv"
+    fields = [
+        milliseconds,
+        *(_scaled(value) for value in event["bid_ohlc"]),
+        str(event["bid_size"]),
+        *(_scaled(value) for value in event["ask_ohlc"]),
+        str(event["ask_size"]),
+    ]
+    return archive, member, ",".join(fields) + "\n"
+
+
 def _sha256(data):
     return hashlib.sha256(data).hexdigest()
 
@@ -162,7 +211,8 @@ def build_fixture(scenario: str, destination: Path, source_data: Path) -> dict:
     events = _events(scenario)
     archives = defaultdict(lambda: defaultdict(list))
     for event in events:
-        archive, member, row = _tick_record(event)
+        serialize = _quote_bar_record if event.get("data_type") == "QuoteBar" else _tick_record
+        archive, member, row = serialize(event)
         rows = archives[archive][member]
         rows.append(row)
         event.update(archive=archive, member=member, line_number=len(rows))
@@ -212,7 +262,7 @@ def build_fixture(scenario: str, destination: Path, source_data: Path) -> dict:
                 "path": relative,
                 "bytes": len(content),
                 "sha256": _sha256(content),
-                "origin": "synthetic_ticks",
+                "origin": "synthetic_quote_bars" if "/minute/" in relative else "synthetic_ticks",
                 "members": member_records,
             }
         )
@@ -278,6 +328,18 @@ def build_fixture(scenario: str, destination: Path, source_data: Path) -> dict:
         "events": events,
         "files": sorted(records, key=lambda record: record["path"]),
     }
+    if scenario in {"minute_itm", "minute_otm"}:
+        manifest["resolution"] = "equity_tick_option_minute"
+        manifest["format_sources"].append(f"{SOURCE_URL}/Common/Data/Market/QuoteBar.cs")
+        manifest["rules"]["bar_availability"] = (
+            "CSV timestamps are bar starts; each bar is available only at its declared end. "
+            "Option bars span [15:55,15:56) and [15:56,15:57); no fill-forward."
+        )
+        manifest["rules"]["separate_control"] = (
+            "Independently invented earlier bars and underlying trade at 15:55:55. "
+            "Not an aggregation of, or partial-fill comparison with, the original tick tape."
+        )
+        del manifest["rules"]["vertical_refresh"]
     (destination / "fixture-manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )

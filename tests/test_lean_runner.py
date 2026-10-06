@@ -36,7 +36,7 @@ def receipt(scenario="market_itm", *, ended=True):
         "total_fees": 0,
         "holdings": {"call100": {"quantity": 0}, "underlying": {"quantity": 100}},
     }
-    if scenario == "market_otm":
+    if scenario in {"market_otm", "minute_otm"}:
         state.update(cash=19800, total_portfolio_value=19800)
         state["holdings"]["underlying"]["quantity"] = 0
     event = {
@@ -52,7 +52,7 @@ def receipt(scenario="market_itm", *, ended=True):
         "is_assignment": False,
         "state": deepcopy(state),
     }
-    return {
+    payload = {
         "lean_commit": runner.LEAN_COMMIT,
         "schema_version": 1,
         "scenario": scenario,
@@ -65,6 +65,28 @@ def receipt(scenario="market_itm", *, ended=True):
         "last_state": state,
         "end_state": deepcopy(state) if ended else None,
     }
+    if scenario.startswith("minute_"):
+        event["utc_time"] = "2026-01-16T20:56:00Z"
+        payload["observed_slices"] = [
+            {
+                "utc_time": f"2026-01-16T20:{minute + 1}:00Z",
+                "quote_bars": [
+                    {
+                        "instrument": "call100",
+                        "time": f"2026-01-16T15:{minute}:00.0000000",
+                        "end_time": f"2026-01-16T15:{minute + 1}:00.0000000",
+                        "period_seconds": 60,
+                        "receipt_utc_time": f"2026-01-16T20:{minute + 1}:00Z",
+                        "bid": dict.fromkeys(("open", "high", "low", "close"), 2),
+                        "ask": dict.fromkeys(("open", "high", "low", "close"), 2),
+                        "bid_size": 10,
+                        "ask_size": 10,
+                    }
+                ],
+            }
+            for minute in (55, 56)
+        ]
+    return payload
 
 
 def native_state(**changes):
@@ -168,6 +190,84 @@ def test_matching_balances_without_correct_entry_fills_do_not_pass_accounting(tm
     assert assessment["matches_terminal_accounting"] is False
 
 
+@pytest.mark.parametrize("scenario", ["minute_itm", "minute_otm"])
+def test_minute_controls_qualify_completed_bars_and_conditional_accounting(tmp_path, scenario):
+    write_native(tmp_path, scenario, native_state())
+    (tmp_path / "observed.json").write_text(json.dumps(receipt(scenario)))
+    observed = runner.observe_case(tmp_path, scenario, 0)
+    assert "errors" not in observed
+    assessment = observed["assessment"]
+    assert assessment["terminal_verified"] is True
+    assert assessment["matches_terminal_accounting"] is True
+    assert assessment["minute_chronology"]["qualified"] is True
+    assert assessment["minute_chronology"]["observed_call100_bar_count"] == 2
+    assert assessment["original_tick_partial_fill_qualified"] is False
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "early_fill",
+        "future_bar",
+        "receipt_before_end",
+        "wrong_period",
+        "wrong_first_bar",
+        "missing_bars",
+        "missing_fill",
+        "naive_utc",
+        "reversed_slices",
+    ],
+)
+def test_minute_chronology_cannot_qualify_invalid_or_missing_observations(tmp_path, change):
+    scenario = "minute_itm"
+    payload = receipt(scenario)
+    first = payload["observed_slices"][0]
+    last = payload["observed_slices"][1]
+    if change == "early_fill":
+        payload["order_events"][0]["utc_time"] = "2026-01-16T20:55:59Z"
+    elif change == "future_bar":
+        # The first bar and entry are sound; every later bar must be checked too.
+        last["quote_bars"][0].update(time="2026-01-16T15:57:00", end_time="2026-01-16T15:58:00")
+    elif change == "receipt_before_end":
+        first["quote_bars"][0]["receipt_utc_time"] = "2026-01-16T20:55:59Z"
+    elif change == "wrong_period":
+        first["quote_bars"][0]["period_seconds"] = 1
+    elif change == "wrong_first_bar":
+        first["quote_bars"][0].update(time="2026-01-16T15:54:00", end_time="2026-01-16T15:55:00")
+    elif change == "missing_bars":
+        payload["observed_slices"] = []
+    elif change == "missing_fill":
+        payload["order_events"] = []
+    elif change == "reversed_slices":
+        payload["observed_slices"].reverse()
+    else:
+        first["utc_time"] = "2026-01-16T20:56:00"
+    write_native(tmp_path, scenario, native_state())
+    (tmp_path / "observed.json").write_text(json.dumps(payload))
+    observed = runner.observe_case(tmp_path, scenario, 0)
+    assert observed["engine_execution_status"] == "completed"
+    assert observed["errors"]
+    assessment = observed["assessment"]
+    assert assessment["minute_chronology"]["qualified"] is False
+    assert assessment["terminal_verified"] is False
+    assert assessment["terminal_economics"] is None
+    assert assessment["last_callback_economics"]["cash"] == 9800
+    assert assessment["matches_terminal_accounting"] is None
+
+
+@pytest.mark.parametrize("field,value", [("fill_quantity", 2), ("fill_price", 3), ("fee", 1)])
+def test_minute_matching_balances_still_require_exact_entry(tmp_path, field, value):
+    payload = receipt("minute_itm")
+    payload["order_events"][0][field] = value
+    write_native(tmp_path, "minute_itm", native_state())
+    (tmp_path / "observed.json").write_text(json.dumps(payload))
+    assessment = runner.observe_case(tmp_path, "minute_itm", 0)["assessment"]
+    assert assessment["minute_chronology"]["qualified"] is True
+    assert assessment["terminal_verified"] is True
+    assert assessment["entry_fill_matches_control"] is False
+    assert assessment["matches_terminal_accounting"] is False
+
+
 @pytest.fixture
 def matrix(tmp_path, monkeypatch):
     lean = tmp_path / "Lean"
@@ -196,8 +296,12 @@ def matrix(tmp_path, monkeypatch):
     )
     calls = []
 
-    def execute(cases):
-        monkeypatch.setattr(runner, "CASES", tuple((name, scenario) for name, scenario, _ in cases))
+    def execute(cases, *, suite="ticks"):
+        monkeypatch.setattr(
+            runner,
+            "CASES" if suite == "ticks" else "MINUTE_CASES",
+            tuple((name, scenario) for name, scenario, _ in cases),
+        )
         actions = {name: action for name, _, action in cases}
 
         def engine(command, **kwargs):
@@ -249,6 +353,7 @@ def test_timeouts_and_bad_receipts_are_retained_and_remaining_cases_run(matrix):
     assert calls == ["bad_json", "timed_out", "wrong_identity", "good"]
     summary = json.loads((output / "summary.json").read_text())
     assert summary["harness_status"] == "failed"
+    assert summary["suite"] == "ticks"
     assert len(summary["cases"]) == 4
     for case in summary["cases"][:3]:
         assert case["errors"] and case["receipt_sha256"] and case["engine_log_sha256"]
@@ -287,18 +392,47 @@ def test_native_shortfall_error_is_preserved_as_an_engine_error_outcome(matrix):
         (("partial", "partial"), None),
     ],
 )
-def test_replay_compares_only_verified_terminal_states(matrix, actions, expected):
+@pytest.mark.parametrize("suite", ["ticks", "minute"])
+def test_replay_compares_only_verified_terminal_states(matrix, actions, expected, suite):
+    name = "market_itm" if suite == "ticks" else "minute_itm"
     lean, output, _ = matrix(
         [
-            ("market_itm", "market_itm", actions[0]),
-            ("market_itm_replay", "market_itm", actions[1]),
-        ]
+            (name, name, actions[0]),
+            (name + "_replay", name, actions[1]),
+        ],
+        suite=suite,
     )
     if "partial" in actions:
         with pytest.raises(RuntimeError):
-            runner.run(lean, output)
+            runner.run(lean, output, suite=suite)
     else:
-        runner.run(lean, output)
+        runner.run(lean, output, suite=suite)
     summary = json.loads((output / "summary.json").read_text())
     assert summary["funded_replay_terminal_comparison_available"] is (expected is not None)
     assert summary["funded_replay_economic_state_equal"] is expected
+
+
+def test_explicit_minute_suite_runs_separate_cases_and_replay(matrix):
+    cases = [
+        ("minute_itm", "minute_itm", "complete"),
+        ("minute_itm_replay", "minute_itm", "complete"),
+        ("minute_otm", "minute_otm", "complete"),
+    ]
+    lean, output, calls = matrix(cases, suite="minute")
+    summary = runner.run(lean, output, suite="minute")
+    assert summary["suite"] == "minute"
+    assert calls == [name for name, _, _ in cases]
+    assert summary["funded_replay_terminal_comparison_available"] is True
+    assert summary["funded_replay_economic_state_equal"] is True
+    assert all(case["assessment"]["matches_terminal_accounting"] for case in summary["cases"])
+
+
+@pytest.mark.parametrize("arguments,expected", [([], "ticks"), (["--suite", "minute"], "minute")])
+def test_cli_selects_suite_explicitly_and_preserves_tick_default(monkeypatch, arguments, expected):
+    calls = []
+    monkeypatch.setattr(
+        sys, "argv", ["run_lean_spike.py", "--lean-root", "Lean", "--output", "results", *arguments]
+    )
+    monkeypatch.setattr(runner, "run", lambda *args, **kwargs: calls.append(kwargs["suite"]))
+    runner.main()
+    assert calls == [expected]

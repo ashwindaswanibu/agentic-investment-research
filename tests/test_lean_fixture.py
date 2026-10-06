@@ -142,6 +142,43 @@ def test_otm_changes_only_terminal_underlying_prices(tmp_path, source_data):
     assert [event["tick_type"] for event in underlying] == ["trade"] * 3
 
 
+@pytest.mark.parametrize("scenario,terminal", [("minute_itm", "110.00"), ("minute_otm", "90.00")])
+def test_minute_controls_use_completed_native_bars_and_declared_earlier_trade(
+    tmp_path, source_data, scenario, terminal
+):
+    destination = tmp_path / "fixture"
+    manifest = fixture.build_fixture(scenario, destination, source_data)
+    assert manifest["resolution"] == "equity_tick_option_minute"
+    written = records(destination)
+    option_files = {key: rows for key, rows in written.items() if key[0].startswith("option/")}
+    assert option_files == {
+        (
+            "option/usa/minute/test/20260116_quote_american.zip",
+            "20260116_test_minute_quote_american_call_1000000_20260116.csv",
+        ): [
+            "57300000,20000,20000,20000,20000,10,20000,20000,20000,20000,10",
+            "57360000,20000,20000,20000,20000,10,20000,20000,20000,20000,10",
+        ]
+    }
+    bars = [event for event in manifest["events"] if event.get("data_type") == "QuoteBar"]
+    assert [bar["utc_end_time"] for bar in bars] == [
+        "2026-01-16T20:56:00Z",
+        "2026-01-16T20:57:00Z",
+    ]
+    for bar in bars:
+        assert bar["period_seconds"] == 60
+        assert datetime.fromisoformat(bar["utc_end_time"]) - datetime.fromisoformat(
+            bar["utc_time"]
+        ) == timedelta(minutes=1)
+    underlying = [event for event in manifest["events"] if event["security_type"] == "equity"]
+    assert [event["price"] for event in underlying] == ["100.00", "100.00", terminal, terminal]
+    assert underlying[0]["utc_time"] == "2026-01-16T20:55:55Z"
+    assert manifest["events"][0] == underlying[0]
+    assert manifest["events"][1] == bars[0]
+    assert manifest["events"][2] == bars[1]
+    assert len(manifest["events"]) == 6
+
+
 @pytest.mark.parametrize(
     "scenario,price", [("market_quote_only", "110.00"), ("market_stale_trade", "90.00")]
 )

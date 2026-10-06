@@ -1,9 +1,24 @@
 # Engineering roadmap and acceptance gates
 
-Updated: 2026-10-05. This is the development contract for the next stages, not a
+Updated: 2026-10-06. This is the development contract for the next stages, not a
 claim of achieved research quality, investment returns, or production readiness.
 It follows Ashwin's instruction to develop the system component by component,
 with serious design research, explicit goals, implementation and independent review.
+
+## Priority correction, 2026-10-06
+
+Ashwin explicitly deferred the demo until the end and stopped further demo work.
+Preserve the existing source/package, but do not spend further development effort
+on demo features, hosting, publication polish or its presentation. Public HTTPS
+deployment and the prior Render sign-in request are deferred. Resume showcase
+work only after the core research and operation milestones below are qualified,
+or if Ashwin explicitly changes this priority.
+
+Core priorities remain M1 research usefulness first, followed by measured adaptive
+specialists/tools, accountable forecasts and strategies, portfolio/options
+operation, and sustained monitoring. The already-started options engine controls
+are bounded dependency work for M4; they do not replace the leading research-quality
+milestone. Core workbench usability supports these real workflows throughout.
 
 ## Product goal
 
@@ -169,7 +184,9 @@ from durable state. Paper operation remains the only trading authority.
 for a declared observation period, report incidents and data gaps, and retain an
 audit trail. Publish a clean reproducible repository and update the resume with
 verified mechanisms and measured results. No fabricated returns or metrics.
-Publication preparation can proceed earlier; completion claims cannot.
+Further demo, hosting and showcase preparation is deferred until this final stage
+under Ashwin's explicit 2026-10-06 direction. Keep resume claims tied to verified
+capabilities and measured results.
 
 ## Initial reference review
 

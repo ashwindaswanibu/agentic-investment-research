@@ -26,6 +26,7 @@ namespace QuantConnect.Algorithm.CSharp
         private readonly object _receiptLock = new object();
         private readonly Dictionary<string, Security> _instruments = new Dictionary<string, Security>();
         private readonly Dictionary<string, object> _lastObservedTicks = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _lastObservedQuoteBars = new Dictionary<string, object>();
         private readonly List<object> _slices = new List<object>();
         private readonly List<object> _orderEvents = new List<object>();
         private readonly List<object> _assignmentEvents = new List<object>();
@@ -41,13 +42,14 @@ namespace QuantConnect.Algorithm.CSharp
         private bool _entrySubmitted;
         private bool _cancelRequested;
         private bool _ended;
+        private bool UsesMinuteQuotes => _scenario == "minute_itm" || _scenario == "minute_otm";
 
         public override void Initialize()
         {
             _scenario = GetParameter("scenario");
             _receiptPath = GetParameter("receipt-path");
             var scenarios = new[] { "native_itm", "market_itm", "market_otm", "market_shortfall",
-                "market_quote_only", "market_stale_trade", "vertical_assignment" };
+                "market_quote_only", "market_stale_trade", "vertical_assignment", "minute_itm", "minute_otm" };
             if (!scenarios.Contains(_scenario) || string.IsNullOrWhiteSpace(_receiptPath))
             {
                 throw new ArgumentException("Require a known scenario and an explicit receipt-path parameter.");
@@ -82,13 +84,14 @@ namespace QuantConnect.Algorithm.CSharp
         {
             var symbol = QuantConnect.Symbol.CreateOption(_underlying.Symbol, Market.USA,
                 OptionStyle.American, OptionRight.Call, strike, Expiry);
-            return AddOptionContract(symbol, Resolution.Tick, fillForward: false,
+            return AddOptionContract(symbol, UsesMinuteQuotes ? Resolution.Minute : Resolution.Tick, fillForward: false,
                 extendedMarketHours: false);
         }
 
         public override void OnData(Slice slice)
         {
             var ticks = new List<object>();
+            var quoteBars = new List<object>();
             lock (_receiptLock)
             {
                 foreach (var entry in slice.Ticks.OrderBy(entry => entry.Key.ID.ToString()))
@@ -100,9 +103,15 @@ namespace QuantConnect.Algorithm.CSharp
                         _lastObservedTicks[InstrumentName(tick.Symbol) + ":" + tick.TickType] = record;
                     }
                 }
+                foreach (var entry in slice.QuoteBars.OrderBy(entry => entry.Key.ID.ToString()))
+                {
+                    var record = QuoteBarRecord(entry.Value);
+                    quoteBars.Add(record);
+                    _lastObservedQuoteBars[InstrumentName(entry.Key)] = record;
+                }
                 _slices.Add(new
                 {
-                    time = Local(Time), utc_time = Utc(UtcTime), ticks,
+                    time = Local(Time), utc_time = Utc(UtcTime), ticks, quote_bars = quoteBars,
                     delistings = slice.Delistings.Values.Select(delisting => new
                     {
                         instrument = InstrumentName(delisting.Symbol), symbol = delisting.Symbol.Value,
@@ -116,7 +125,8 @@ namespace QuantConnect.Algorithm.CSharp
 
             var entryDate = _scenario == "vertical_assignment" ? new DateTime(2026, 1, 15) : Expiry;
             if (!_entrySubmitted && Time.Date == entryDate && Time.TimeOfDay >= new TimeSpan(9, 31, 0)
-                && _underlying.HasData && HasQuote(slice, _call100.Symbol)
+                && _underlying.HasData
+                && (UsesMinuteQuotes ? HasCompletedEntryQuoteBar(slice, _call100.Symbol) : HasQuote(slice, _call100.Symbol))
                 && (_call120 == null || _call120.HasData))
             {
                 _entrySubmitted = true;
@@ -137,7 +147,9 @@ namespace QuantConnect.Algorithm.CSharp
                 else
                 {
                     RecordSubmission(MarketOrder(_call100.Symbol, 1m,
-                        tag: "separate market-entry control: long one K100"));
+                        tag: UsesMinuteQuotes
+                            ? "separate minute-quote control: long one K100 after first completed bar"
+                            : "separate market-entry control: long one K100"));
                 }
             }
             WriteReceipt();
@@ -147,6 +159,18 @@ namespace QuantConnect.Algorithm.CSharp
         {
             return slice.Ticks.TryGetValue(symbol, out var ticks)
                 && ticks.Any(tick => tick.TickType == TickType.Quote && tick.AskPrice > 0m);
+        }
+
+        private bool HasCompletedEntryQuoteBar(Slice slice, Symbol symbol)
+        {
+            // The frozen minute experiment starts only after delivery of the
+            // complete [15:55, 15:56) bar. Missing that bar is a failed input
+            // observation, not permission to enter on a later substitute.
+            return slice.QuoteBars.TryGetValue(symbol, out var quoteBar)
+                && quoteBar.Period == TimeSpan.FromMinutes(1)
+                && quoteBar.EndTime == Expiry.AddHours(15).AddMinutes(56)
+                && quoteBar.EndTime <= Time
+                && quoteBar.Ask != null && quoteBar.Ask.Close > 0m;
         }
 
         public override void OnOrderEvent(OrderEvent orderEvent)
@@ -230,6 +254,28 @@ namespace QuantConnect.Algorithm.CSharp
             };
         }
 
+        private object QuoteBarRecord(QuoteBar quoteBar)
+        {
+            return new
+            {
+                instrument = InstrumentName(quoteBar.Symbol), symbol = quoteBar.Symbol.Value,
+                symbol_id = quoteBar.Symbol.ID.ToString(),
+                time = Local(quoteBar.Time), end_time = Local(quoteBar.EndTime),
+                period_seconds = quoteBar.Period.TotalSeconds, receipt_utc_time = Utc(UtcTime),
+                bid = quoteBar.Bid == null ? null : new
+                {
+                    open = quoteBar.Bid.Open, high = quoteBar.Bid.High,
+                    low = quoteBar.Bid.Low, close = quoteBar.Bid.Close
+                },
+                ask = quoteBar.Ask == null ? null : new
+                {
+                    open = quoteBar.Ask.Open, high = quoteBar.Ask.High,
+                    low = quoteBar.Ask.Low, close = quoteBar.Ask.Close
+                },
+                bid_size = quoteBar.LastBidSize, ask_size = quoteBar.LastAskSize
+            };
+        }
+
         private object State()
         {
             return new
@@ -262,6 +308,7 @@ namespace QuantConnect.Algorithm.CSharp
             var instrument = InstrumentName(security.Symbol);
             _lastObservedTicks.TryGetValue(instrument + ":Trade", out var observedTrade);
             _lastObservedTicks.TryGetValue(instrument + ":Quote", out var observedQuote);
+            _lastObservedQuoteBars.TryGetValue(instrument, out var observedQuoteBar);
             return new
             {
                 symbol = security.Symbol.Value, symbol_id = security.Symbol.ID.ToString(),
@@ -281,7 +328,8 @@ namespace QuantConnect.Algorithm.CSharp
                     last_data_time = data == null ? null : Local(data.Time),
                     last_data_end_time = data == null ? null : Local(data.EndTime),
                     last_strategy_observed_trade = observedTrade,
-                    last_strategy_observed_quote = observedQuote
+                    last_strategy_observed_quote = observedQuote,
+                    last_strategy_observed_quote_bar = observedQuoteBar
                 }
             };
         }
@@ -316,16 +364,19 @@ namespace QuantConnect.Algorithm.CSharp
                         synthetic = true, data_time_zone = "America/New_York",
                         account_type = _accountType.ToString(), starting_cash = _startingCash,
                         fee_override = "ConstantFeeModel(0 USD)", fill_forward = false,
+                        underlying_resolution = "Tick", option_resolution = UsesMinuteQuotes ? "Minute" : "Tick",
                         underlying_extended_market_hours = true, option_extended_market_hours = false,
                         option_style = "American", option_expiry = "2026-01-16",
                         entry_protocol = _scenario == "native_itm" ? "buy_2_limit_2_cancel_on_actual_partial_fill"
                             : _scenario == "vertical_assignment" ? "market_buy_1_K120_then_sell_1_K100"
+                            : UsesMinuteQuotes ? "market_buy_1_K100_after_completed_1555_to_1556_quote_bar"
                             : "market_buy_1_K100_control",
                         manual_exercise_or_assignment = false, seeded_holdings = false
                     },
                     entry_submitted = _entrySubmitted, cancel_requested = _cancelRequested,
                     model_types = _instruments.ToDictionary(entry => entry.Key, entry => ModelRecord(entry.Value)),
                     observed_slices = _slices, last_observed_ticks = _lastObservedTicks,
+                    last_observed_quote_bars = _lastObservedQuoteBars,
                     submitted_orders = _submissions, order_events = _orderEvents,
                     assignment_events = _assignmentEvents, cancel_requests = _cancelRequests,
                     orders = Transactions.GetOrders().OrderBy(order => order.Id).Select(order => new

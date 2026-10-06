@@ -14,6 +14,7 @@ import time
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from lean_fixture import build_fixture
 
@@ -28,6 +29,75 @@ CASES = (
     ("market_stale_trade", "market_stale_trade"),
     ("vertical_assignment", "vertical_assignment"),
 )
+MINUTE_CASES = (
+    ("minute_itm", "minute_itm"),
+    ("minute_itm_replay", "minute_itm"),
+    ("minute_otm", "minute_otm"),
+)
+MINUTE_FIRST_BAR_END = datetime(2026, 1, 16, 20, 56, tzinfo=UTC)
+
+
+def observed_time(value, *, local=False):
+    timestamp = datetime.fromisoformat(value)
+    if timestamp.tzinfo is None:
+        if not local:
+            raise ValueError("UTC observation timestamp must include its time zone.")
+        timestamp = timestamp.replace(tzinfo=ZoneInfo("America/New_York"))
+    return timestamp.astimezone(UTC)
+
+
+def minute_chronology(observed):
+    """Check delivered bar chronology independently of native portfolio completion."""
+    errors = []
+    bar_ends = []
+    receipt_times = []
+    entry_times = []
+    previous_slice_time = None
+    try:
+        for snapshot in observed["observed_slices"]:
+            slice_time = observed_time(snapshot["utc_time"])
+            if previous_slice_time is not None and slice_time < previous_slice_time:
+                errors.append("Observed slice receipt times are out of chronological order.")
+            previous_slice_time = slice_time
+            for bar in snapshot["quote_bars"]:
+                start = observed_time(bar["time"], local=True)
+                end = observed_time(bar["end_time"], local=True)
+                received = observed_time(bar["receipt_utc_time"])
+                if (end - start).total_seconds() != 60 or bar["period_seconds"] != 60:
+                    errors.append("Observed quote bar does not cover exactly one minute.")
+                if end > received or end > slice_time:
+                    errors.append("Observed quote bar ends after its receipt or slice time.")
+                if received != slice_time:
+                    errors.append("Quote bar receipt time differs from its enclosing slice.")
+                if bar["instrument"] == "call100":
+                    bar_ends.append(end)
+                    receipt_times.append(received)
+        if not bar_ends or bar_ends[0] != MINUTE_FIRST_BAR_END:
+            errors.append("First observed call100 bar must end at 2026-01-16T20:56:00Z.")
+        for event in observed["order_events"]:
+            if (
+                event["instrument"] == "call100"
+                and event["order_type"] == "Market"
+                and Decimal(str(event["fill_quantity"])) != 0
+            ):
+                filled = observed_time(event["utc_time"])
+                entry_times.append(filled)
+                if filled < MINUTE_FIRST_BAR_END or (receipt_times and filled < receipt_times[0]):
+                    errors.append(
+                        "Entry filled before the first completed call100 bar was received."
+                    )
+        if not entry_times:
+            errors.append("No actual market entry fill is available to qualify chronology.")
+    except (ValueError, KeyError, TypeError, AttributeError, ArithmeticError) as exc:
+        errors.append(f"Cannot qualify minute chronology: {exc}")
+    return {
+        "qualified": not errors,
+        "first_allowed_entry_utc": MINUTE_FIRST_BAR_END.isoformat(),
+        "observed_call100_bar_count": len(bar_ends),
+        "first_observed_bar_end_utc": bar_ends[0].isoformat() if bar_ends else None,
+        "first_entry_fill_utc": min(entry_times).isoformat() if entry_times else None,
+        "errors": errors,
+    }
 
 
 def file_hash(path):
@@ -165,8 +235,8 @@ def assess(observed, *, terminal_verified=False):
             "underlying": 100,
             "exactly_one_contract_filled_and_remainder_cancelled": True,
         }
-    elif scenario in {"market_itm", "market_otm"}:
-        itm = scenario == "market_itm"
+    elif scenario in {"market_itm", "market_otm", "minute_itm", "minute_otm"}:
+        itm = scenario in {"market_itm", "minute_itm"}
         expected = {"cash": 9800 if itm else 19800, "call100": 0, "underlying": 100 if itm else 0}
         result["expected_after_one_entry_at_2_and_native_expiry"] = expected
         entry_fills = [
@@ -179,11 +249,15 @@ def assess(observed, *, terminal_verified=False):
             and all(Decimal(str(event["fill_price"])) == 2 for event in entry_fills)
             and all(Decimal(str(event["fee"])) == 0 for event in entry_fills)
         )
+        if scenario.startswith("minute_"):
+            result["minute_chronology"] = minute_chronology(observed)
+            result["original_tick_partial_fill_qualified"] = False
         result["matches_terminal_accounting"] = (
             None
             if not terminal_verified
             else (
                 result["entry_fill_matches_control"]
+                and result.get("minute_chronology", {"qualified": True})["qualified"]
                 and bool(state)
                 and Decimal(str(state["total_fees"])) == 0
                 and (
@@ -291,6 +365,8 @@ def observe_case(case_dir, scenario, returncode, *, timed_out=False):
             )
             if not entry_reached:
                 errors.append("The native input/order path never reached entry submission.")
+            if scenario in {"minute_itm", "minute_otm"}:
+                errors.extend(minute_chronology(observed)["errors"])
             terminal_verified = (
                 status == "completed"
                 and not errors
@@ -309,7 +385,10 @@ def observe_case(case_dir, scenario, returncode, *, timed_out=False):
     return entry
 
 
-def run(lean_root, output):
+def run(lean_root, output, *, suite="ticks"):
+    if suite not in {"ticks", "minute"}:
+        raise ValueError(f"Unknown experiment suite: {suite}")
+    cases = CASES if suite == "ticks" else MINUTE_CASES
     lean_root, output = lean_root.resolve(), output.absolute()
     if output.exists() or output.is_symlink():
         raise ValueError(
@@ -339,6 +418,7 @@ def run(lean_root, output):
         "schema_version": 1,
         "recorded_at": datetime.now(UTC).isoformat(),
         "synthetic": True,
+        "suite": suite,
         "lean_commit": actual_commit,
         "launcher_sha256": file_hash(launcher),
         "algorithm_sha256": file_hash(binary_dir / "QuantConnect.Algorithm.CSharp.dll"),
@@ -348,7 +428,7 @@ def run(lean_root, output):
         "cases": [],
     }
     try:
-        for run_name, scenario in CASES:
+        for run_name, scenario in cases:
             case_dir = output / run_name
             case_dir.mkdir()
             manifest = build_fixture(scenario, case_dir / "data", lean_root / "Data")
@@ -410,8 +490,9 @@ def run(lean_root, output):
         else:
             summary["harness_status"] = "observed"
         by_name = {case["run"]: case for case in summary["cases"]}
-        funded = by_name.get("market_itm", {}).get("assessment", {})
-        replay = by_name.get("market_itm_replay", {}).get("assessment", {})
+        funded_name = "market_itm" if suite == "ticks" else "minute_itm"
+        funded = by_name.get(funded_name, {}).get("assessment", {})
+        replay = by_name.get(funded_name + "_replay", {}).get("assessment", {})
         summary["funded_replay_terminal_comparison_available"] = bool(
             funded.get("terminal_verified") and replay.get("terminal_verified")
         )
@@ -431,8 +512,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lean-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--suite", choices=("ticks", "minute"), default="ticks")
     args = parser.parse_args()
-    run(args.lean_root, args.output)
+    run(args.lean_root, args.output, suite=args.suite)
 
 
 if __name__ == "__main__":
