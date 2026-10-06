@@ -10,9 +10,11 @@ or application dependency was used or changed.
 **Do not select or migrate to an options engine yet.** NautilusTrader ran a genuine
 partial-fill/cancellation/physical-expiry sequence and matched independent arithmetic.
 The negative cases expose integration requirements that a successful backtest alone
-would miss. LEAN remains the next runtime comparison, especially for American-style
-exercise/assignment and position-group buying power. Its execution is still unverified
-here; source and container metadata do not substitute for the same event-tape test.
+would miss. The [subsequent LEAN execution](lean-runtime-protocol.md#first-execution-native-tick-input-rejected)
+compiled and launched the full engine, but all eight scenarios were rejected during
+initialization because native options backtests do not support Tick resolution.
+Its lifecycle behavior remains unverified. A separately declared minute-bar study
+is needed; it cannot establish equivalent tick-level fill behavior.
 
 Keep the engine boundary proposed in ADR 0002: ResearchDesk owns evidence and authority;
 one selected engine owns economic simulation. A completed, validated event batch may

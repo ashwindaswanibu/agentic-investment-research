@@ -1,0 +1,401 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-06",
+  "evidence_kind": "case records extracted from the completed GitHub Actions job log; engine logs remain in the linked run artifact",
+  "repository_commit": "a0e36fe14f168ef41acd319ad04df7e25330e347",
+  "lean_commit": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+  "dotnet_sdk": "10.0.401",
+  "workflow_run": "https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37411363545",
+  "artifact": "https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37411363545/artifacts/11389735852",
+  "build": "succeeded",
+  "scenario_matrix": "failed during native initialization in all eight runs",
+  "options_lifecycle_verified": false,
+  "engine_adoption": false,
+  "synthetic": true,
+  "cases": [
+    {
+      "run": "native_itm",
+      "scenario": "native_itm",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-native_itm-summary.json",
+          "sha256": "c2d2b774f70acb2290627ce4b13be6bafc005847b66ba25f24bac19580e9caed",
+          "state": {
+            "StartTime": "2026-10-06T03:58:40Z",
+            "EndTime": "2026-10-06T03:58:41Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: native_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-native_itm.json",
+          "sha256": "128b27467e50149385ff93726acef80602ad664d6bc9661ddbf7c7babf856c1d",
+          "state": {
+            "StartTime": "2026-10-06T03:58:40Z",
+            "EndTime": "2026-10-06T03:58:41Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: native_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 4.037,
+      "fixture_sha256": "9d28879851b01de4e8d32e589a9d7c04ca5b0666ae559463b68a6c1b573bd162",
+      "config_sha256": "d05236e3b4f6ef517d1dd2a6e4b9a83a519a432ff927940064151184ce7dffaf",
+      "engine_log_sha256": "01d6d2ec522a720ff567a80d25686adc1e9cfe8f428063121e926d1880bbdac3"
+    },
+    {
+      "run": "market_itm",
+      "scenario": "market_itm",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-market_itm-summary.json",
+          "sha256": "e34b93422adb7423af1b029819607b137ac7d47ad41072a6ef7a32aeaba8bc7e",
+          "state": {
+            "StartTime": "2026-10-06T03:58:44Z",
+            "EndTime": "2026-10-06T03:58:45Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-market_itm.json",
+          "sha256": "ce82f2cd93ac17b0fc071059c4d029442936c650c522b9dd564b2b41f537cc0b",
+          "state": {
+            "StartTime": "2026-10-06T03:58:44Z",
+            "EndTime": "2026-10-06T03:58:45Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 3.734,
+      "fixture_sha256": "4a10f318ebf8a36f9b0f7d0505dea3859fe2cd35c045e33a161dd995a52b22cd",
+      "config_sha256": "2a5a3cb10be4f3334af9ef60f1491dc92895590510c0808aed0be9bc8313e851",
+      "engine_log_sha256": "4b48046467cb75a9a418e22147afc419ec0cd63c0607d50d421913ff0a3a7f52"
+    },
+    {
+      "run": "market_itm_replay",
+      "scenario": "market_itm",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-market_itm-summary.json",
+          "sha256": "52692d16fb396eed3443d4cc6422251c5f52a7a4c2003b64a080130aa6ea56ee",
+          "state": {
+            "StartTime": "2026-10-06T03:58:48Z",
+            "EndTime": "2026-10-06T03:58:49Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-market_itm.json",
+          "sha256": "10f4da80c011fc30da167ea347afa5bfa8b6bac021532f7edb6aef68298a63e6",
+          "state": {
+            "StartTime": "2026-10-06T03:58:48Z",
+            "EndTime": "2026-10-06T03:58:49Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_itm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 4.028,
+      "fixture_sha256": "4a10f318ebf8a36f9b0f7d0505dea3859fe2cd35c045e33a161dd995a52b22cd",
+      "config_sha256": "a8dbc23b739368b5d6d5316214a013609b6ec1cf8598b42ef9a887d7b8b853b6",
+      "engine_log_sha256": "1503ac05b2dc1de60a2ac3c98465eff53c351170c8f2e9a30a78b2f687087b18"
+    },
+    {
+      "run": "market_otm",
+      "scenario": "market_otm",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-market_otm-summary.json",
+          "sha256": "ad9a6a6858f6c2f2595a817e0f038b8e9a7e146d0a58cf86642ec84606d9469e",
+          "state": {
+            "StartTime": "2026-10-06T03:58:51Z",
+            "EndTime": "2026-10-06T03:58:52Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_otm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-market_otm.json",
+          "sha256": "1680eae5e0ef32fb0a05be1ef37d31d90287cc03fc97fcfcbc6c86dc1bc578e4",
+          "state": {
+            "StartTime": "2026-10-06T03:58:51Z",
+            "EndTime": "2026-10-06T03:58:52Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_otm",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 3.782,
+      "fixture_sha256": "dcd5f3627d0a2c89a01a4f2f997c7d7c994776bd8cb4263a400219fe7121a3fb",
+      "config_sha256": "096863578af13bfcab4d8f5fb23d918b52d0e1f6a2854992d964b2afc9b05290",
+      "engine_log_sha256": "9b79dc65e0cd06f3ea4d2d94ae003f66b39ef61938347b2c486cad19c8b3cd89"
+    },
+    {
+      "run": "market_shortfall",
+      "scenario": "market_shortfall",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-market_shortfall-summary.json",
+          "sha256": "f44cf063c862d5321bbc18beb847a18a498c2fa2c1801bbf1313ff84947f0978",
+          "state": {
+            "StartTime": "2026-10-06T03:58:55Z",
+            "EndTime": "2026-10-06T03:58:56Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_shortfall",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-market_shortfall.json",
+          "sha256": "386b96ad2021cc0b7e5faab89d46850aa466776cec2a3dab962963f5f8d336ab",
+          "state": {
+            "StartTime": "2026-10-06T03:58:55Z",
+            "EndTime": "2026-10-06T03:58:56Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_shortfall",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 3.977,
+      "fixture_sha256": "280b8b69ce6d6c3cf835104a44c64350f1012aa7eb57105d13f232334e3843ec",
+      "config_sha256": "6ab472e33efbc2edc1bf24c760ce5266c7bd2be42b93843a8d81b9a4bb2dc11b",
+      "engine_log_sha256": "4d745251fd1c52a5e405d08753017b8924f348bc7694746b1ca856f8c68277af"
+    },
+    {
+      "run": "market_quote_only",
+      "scenario": "market_quote_only",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-market_quote_only-summary.json",
+          "sha256": "81ae3bc007b5801041b035c628e0f23c833de8076a271a5f585e557d441efc85",
+          "state": {
+            "StartTime": "2026-10-06T03:58:59Z",
+            "EndTime": "2026-10-06T03:59:00Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_quote_only",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-market_quote_only.json",
+          "sha256": "aaeefb1c44ba3711185f898bdbda9da229e25d865fdea4fe57ac54a32e35b283",
+          "state": {
+            "StartTime": "2026-10-06T03:58:59Z",
+            "EndTime": "2026-10-06T03:59:00Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_quote_only",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 3.382,
+      "fixture_sha256": "de3465bbb07f08d5c7b822591fbf6355e724b1816cf5770988b605fc623f2d65",
+      "config_sha256": "fe83133bd2f6e7ba69c36e746d16ffa325af4a4813b8ec88b9eb5d9551ab4cfa",
+      "engine_log_sha256": "70b6d00de95b27b396c4551aba1832b71d4dae7e2c0244cd95691bd0bddc1b31"
+    },
+    {
+      "run": "market_stale_trade",
+      "scenario": "market_stale_trade",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-market_stale_trade-summary.json",
+          "sha256": "61949efa89ae3ac98faab0e7f448b9e9aa6fd38d8a457ba4d47db094d27a620a",
+          "state": {
+            "StartTime": "2026-10-06T03:59:02Z",
+            "EndTime": "2026-10-06T03:59:03Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_stale_trade",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-market_stale_trade.json",
+          "sha256": "d56b89e279694ea08a3bb5e5f766d1aca60ddbdf874cb6cd73bca1fe60d55f5c",
+          "state": {
+            "StartTime": "2026-10-06T03:59:02Z",
+            "EndTime": "2026-10-06T03:59:03Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: market_stale_trade",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 3.522,
+      "fixture_sha256": "ec3d510aa81a917fe7ea583ee2d6cf9d8446498492e68ec0dfe09a1a7b5cda9c",
+      "config_sha256": "650499fb58dd033bf72e310196fb94f1235d783f6c16c636a51be16950c1c24a",
+      "engine_log_sha256": "c989403a4bad88fdf464f6b9979bd49db5e13e08f47e641af5b2e516a6d82dec"
+    },
+    {
+      "run": "vertical_assignment",
+      "scenario": "vertical_assignment",
+      "returncode": 1,
+      "timed_out": false,
+      "native_engine_states": [
+        {
+          "file": "researchdesk-vertical_assignment-summary.json",
+          "sha256": "42e32a2e9cccfb346e5b1a521c90b8a5fae487f0474469671394c738cfd74bb9",
+          "state": {
+            "StartTime": "2026-10-06T03:59:06Z",
+            "EndTime": "2026-10-06T03:59:06Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: vertical_assignment",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        },
+        {
+          "file": "researchdesk-vertical_assignment.json",
+          "sha256": "19f7076091cd0141945d890730e9c37be4ce7a37a43f3076063be9f0feb55508",
+          "state": {
+            "StartTime": "2026-10-06T03:59:06Z",
+            "EndTime": "2026-10-06T03:59:06Z",
+            "RuntimeError": "2026-01-15 00:00:00 During the algorithm initialization, the following exception has occurred: Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "StackTrace": "Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute). in DataManager.cs:line 681 Sorry Tick is not a supported resolution for Tick and SecurityType.Option. Please change your AddData to use one of the supported resolutions (Daily,Hour,Minute).",
+            "LogCount": "1",
+            "OrderCount": "0",
+            "InsightCount": "0",
+            "Name": "Synthetic options comparison: vertical_assignment",
+            "Hostname": "runnervm8df0l",
+            "Status": "RuntimeError"
+          }
+        }
+      ],
+      "engine_execution_status": "runtime_error",
+      "errors": [
+        "Engine produced no algorithm observation receipt."
+      ],
+      "elapsed_seconds": 3.078,
+      "fixture_sha256": "9ea032c8873eab392dd1c13fedf333923a0aec7259f10e061f22693fa02c5997",
+      "config_sha256": "ff8e5f7183470765138e82c810223b2b37fa83e680fcaeacd99eae2964445783",
+      "engine_log_sha256": "5eaa2ff1c1c4617950cd985b71ba66256f4c967cd237138025aa1cf262e24282"
+    }
+  ]
+}

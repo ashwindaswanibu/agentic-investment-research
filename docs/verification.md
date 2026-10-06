@@ -1,5 +1,25 @@
 # Verification record
 
+## Full LEAN tick-input attempt, 2026-10-06 UTC
+
+- Pinned LEAN source and .NET SDK compiled the real C# launcher and isolated
+  comparison algorithm in GitHub Actions. No QuantConnect account, CLI or market
+  subscription was used. Runtime networking was disabled.
+- All eight scenarios were attempted and retained, but native initialization
+  rejected option Tick resolution in every case. Each native result reports
+  RuntimeError and zero orders. There is no verified fill, expiry, assignment or
+  terminal accounting result from this attempt.
+- 38 local fixture and runner tests passed. They cover native file generation,
+  input provenance, incomplete/failed observations and continuation after errors;
+  they do not establish the engine's lifecycle correctness.
+- Independent review confirmed the supported-resolution restriction and the
+  need for separately declared minute-bar controls. The original inputs and
+  failure evidence remain intact; no model or subscription bypass was introduced.
+
+See the [protocol and observed result](decisions/lean-runtime-protocol.md#first-execution-native-tick-input-rejected)
+and [actual CI run](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37411363545).
+Options engine selection and admission remain unfinished.
+
 ## Combined demo container, 2026-10-05
 
 [GitHub Actions run 37408081344](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37408081344)

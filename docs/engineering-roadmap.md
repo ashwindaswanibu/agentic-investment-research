@@ -135,7 +135,9 @@ does not defer options discovery until prospective outcomes resolve, and does no
 authorize options admission before M4.
 The [executed first spike](decisions/options-engine-spike.md) found funded-expiry
 agreement plus partial-error state and missing/stale-settlement-input failures in
-a pinned Nautilus release candidate. No engine is selected; LEAN runtime comparison
+a pinned Nautilus release candidate. The [first full LEAN runtime attempt](decisions/lean-runtime-protocol.md#first-execution-native-tick-input-rejected)
+compiled successfully but rejected the tick input during initialization in all
+eight runs. No engine is selected; a supported-resolution lifecycle comparison
 and broader lifecycle tests remain outstanding.
 
 **M2 — measure adaptive specialists and reusable tools.** Extend M1 with a

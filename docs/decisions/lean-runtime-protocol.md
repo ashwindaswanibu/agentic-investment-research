@@ -95,3 +95,38 @@ Options admission remains disabled until the broader ADR gates pass.
 - [Default fill semantics](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Common/Orders/Fills/FillModel.cs).
 - [Assignment implementation](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Common/Securities/Option/DefaultOptionAssignmentModel.cs)
   and [existing full-engine exercise regression](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Algorithm.CSharp/OptionExerciseAssignRegressionAlgorithm.cs).
+
+## First execution: native tick input rejected
+
+Observed 2026-10-06 UTC, using ResearchDesk commit
+`a0e36fe14f168ef41acd319ad04df7e25330e347`. The real launcher compiled successfully
+with the pinned SDK and source. All eight isolated runs then exited with code 1
+and native `Status=RuntimeError` during initialization. Each recorded zero orders.
+The rejection was that Tick resolution is unsupported for Option securities;
+the allowed backtest resolutions are Daily, Hour and Minute. No algorithm receipt,
+fill, exercise, assignment or qualified terminal portfolio was produced.
+
+[Actual workflow](https://github.com/ashwindaswanibu/agentic-investment-research/actions/runs/37411363545),
+[retained native case records](../../examples/engine_spikes/lean-observed-2026-10-06.json).
+The records were extracted from the job log; they retain hashes of the generated
+inputs, configuration, logs and native final results. The run artifact also holds
+the full build and engine diagnostics, subject to GitHub's artifact retention.
+The earlier attempt failed compilation on an unqualified `Symbol.CreateOption`
+reference; qualifying `QuantConnect.Symbol` fixed that adapter error before this
+execution. Neither failure is reported as a successful lifecycle experiment.
+
+Pinned source confirms that `BaseData.SupportedResolutions()` returns the restricted
+option list and `DataManager` enforces it before data-permission checks. No valid
+configuration enabling the frozen tick tape was identified. Do not set live mode,
+modify the option resolution list or bypass the subscription check to manufacture
+equivalence with Nautilus.
+[Native resolution policy](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Common/Data/BaseData.cs),
+[subscription validation](https://github.com/QuantConnect/Lean/blob/705b9551be1aaa821c7f77896a7eb8fcd07b92ee/Engine/DataFeeds/DataManager.cs).
+
+The next comparison needs a separately declared minute-bar protocol. Start with
+funded ITM, its replay and OTM controls, defining bar start/end availability and
+entry timing before running them. This changes the input representation and cannot
+establish the original tick-level partial-fill behavior. Extend to the remaining
+lifecycle questions only after verifying the native bar path. This tick protocol
+and its failed result remain intact. No engine is selected or admitted to paper
+options execution.
