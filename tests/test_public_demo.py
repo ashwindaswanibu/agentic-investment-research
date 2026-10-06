@@ -68,7 +68,8 @@ def demo(tmp_path_factory):
 
         patch.setattr(socket.socket, "connect", no_outbound)
         patch.setattr(subprocess, "Popen", no_process)
-        package = root / "package"
+        # Match the README command from a checkout with no ignored artifacts dir.
+        package = root / "artifacts" / "public-demo"
         manifest = builder.build_package(package)
         assert existing.read_bytes() == original
         assert not (root / "operator-artifacts").exists()

@@ -295,7 +295,7 @@ def build_package(output):
     output = Path(output).absolute()
     # mkdir is exclusive, including dangling symlinks. No reset/overwrite option.
     try:
-        output.mkdir(exist_ok=False)
+        output.mkdir(parents=True, exist_ok=False)
     except FileExistsError as exc:
         raise PackageError("Output already exists; choose a new directory.") from exc
     output = output.resolve()
