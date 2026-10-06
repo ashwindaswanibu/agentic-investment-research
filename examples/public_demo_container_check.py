@@ -165,10 +165,22 @@ def run_check(image, output):
         inside(
             name,
             f"""
-import os, sqlite3
+import errno, os, sqlite3
 assert os.getuid() == 10001
+assert os.stat('{DATABASE}').st_uid == 0
+assert os.stat('{DATABASE}').st_mode & 0o222 == 0
 try:
-    db = sqlite3.connect('{DATABASE}')
+    fd = os.open('{DATABASE}', os.O_WRONLY)
+except OSError as exc:
+    assert exc.errno in (errno.EACCES, errno.EROFS), exc
+else:
+    os.close(fd)
+    raise AssertionError('Package file unexpectedly writable')
+# Match the application's URI. A plain WAL connection can fail creating its
+# sidecars before attempting the statement; check an actual read before writing.
+db = sqlite3.connect('file:{DATABASE}?mode=ro&immutable=1', uri=True)
+assert db.execute('SELECT COUNT(*) FROM sqlite_schema').fetchone()[0] > 0
+try:
     db.execute('CREATE TABLE forbidden (value TEXT)')
 except sqlite3.OperationalError as exc:
     assert 'readonly' in str(exc).lower(), exc

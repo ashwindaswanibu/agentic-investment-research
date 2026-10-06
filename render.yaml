@@ -9,5 +9,5 @@ services:
     dockerfilePath: ./deploy/public-demo.Dockerfile
     dockerContext: .
     healthCheckPath: /api/health
-    autoDeployTrigger: off
+    autoDeployTrigger: "off"
     maxShutdownDelaySeconds: 30
