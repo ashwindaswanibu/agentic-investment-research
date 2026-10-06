@@ -80,7 +80,7 @@ namespace QuantConnect.Algorithm.CSharp
 
         private Option AddCall(decimal strike)
         {
-            var symbol = Symbol.CreateOption(_underlying.Symbol, Market.USA,
+            var symbol = QuantConnect.Symbol.CreateOption(_underlying.Symbol, Market.USA,
                 OptionStyle.American, OptionRight.Call, strike, Expiry);
             return AddOptionContract(symbol, Resolution.Tick, fillForward: false,
                 extendedMarketHours: false);
